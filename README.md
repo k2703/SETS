@@ -2,6 +2,6 @@
 Smart Energy Trading System
 
 ## Run Configuration
-`-gui -agents HA:assignmenttest.HomeAgent;AirCon:assignmenttest.ApplianceAgent;ElectricCar:assignmenttest.ApplianceAgent;SolarPanel:assignmenttest.ApplianceAgent;ErgonEnergy:assignmenttest.RetailAgent;SumoPower:assignmenttest.RetailAgent;Powerdirect:assignmenttest.RetailAgent`
+`-gui -agents Home:agentspackage.HomeAgent;AirCon:agentspackage.ApplianceAgent;ElectricCar:agentspackage.ApplianceAgent;SolarPanel:agentspackage.ApplianceAgent;ErgonEnergy:agentspackage.RetailAgent;SumoPower:agentspackage.RetailAgent;Powerdirect:agentspackage.RetailAgent`
 
 With Main class jade.Boot
