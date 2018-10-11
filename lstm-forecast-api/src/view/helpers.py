@@ -16,15 +16,12 @@ print(__version__)# requires version >= 1.9.0
 import plotly
 import plotly.graph_objs as go
 from datetime import datetime
-plotly.offline.init_notebook_mode(connected=True)
 import os
 from keras.models import model_from_json
 from sklearn.externals import joblib
-
-
 def read_electricity_p(appliances = None, 
                        limit = None, 
-                       rel_file_path = '/Forecast-service/data/Electricity_P.csv'):
+                       filename = 'Electricity_P.csv'):
     
     """Reads Electricity_p dataset
 
@@ -38,7 +35,7 @@ def read_electricity_p(appliances = None,
     """
     
     # NOTE: data will be provided in google cloud storage
-    filename = os.path.dirname(os.getcwd()).replace(' ','\ ') + rel_file_path
+    filename = os.path.dirname(os.path.dirname(os.getcwd()).replace(' ','\ ')) + "/data/" + filename
     
     # define appliance which shall be displayed
     if appliances is None and limit is None:
@@ -199,7 +196,7 @@ def save_model(lstm_model, model_name):
 
     # serialize model to JSON
     lstm_model_json = lstm_model.to_json()
-    home_dir = os.path.dirname(os.getcwd()).replace(' ','\ ')+ "/Forecast-service/models/"
+    home_dir = os.path.dirname(os.path.dirname(os.getcwd()).replace(' ','\ '))+ "/models/"
     with open(home_dir+model_name +".json" , "w") as json_file:
         json_file.write(lstm_model_json)
 
@@ -208,19 +205,19 @@ def save_model(lstm_model, model_name):
 
     
 def save_scaler(scaler, scaler_name):
-    home_dir = os.path.dirname(os.getcwd()).replace(' ','\ ')+ "/Forecast-service/data/"
+    home_dir = os.path.dirname(os.path.dirname(os.getcwd()).replace(' ','\ '))+ "/data/"
     scaler_filename = home_dir +scaler_name
     joblib.dump(scaler, scaler_filename) 
     
     
-def save_raw_normalized(raw_normalized, raw_normalized_name):
-    home_dir = os.path.dirname(os.getcwd()).replace(' ','\ ')+ "/Forecast-service/data/"
-    raw_normalized_filename = home_dir +raw_normalized_name + ".npy"
-    np.save(raw_normalized_filename, raw_normalized) 
+def save_ndarray(ndarray, ndarray_name):
+    home_dir = os.path.dirname(os.path.dirname(os.getcwd()).replace(' ','\ '))+ "/data/"
+    ndarray_filename = home_dir +ndarray_name + ".npy"
+    np.save(ndarray_filename, ndarray) 
     
 
 def load_model(model_name):
-    home_dir = os.path.dirname(os.getcwd()).replace(' ','\ ')+ "/Forecast-service/models/"
+    home_dir = os.path.dirname(os.path.dirname(os.getcwd()).replace(' ','\ '))+ "/models/"
 
     # load json and create model
     json_file = open(home_dir+model_name+".json", 'r')
@@ -236,14 +233,14 @@ def load_model(model_name):
     
 def load_scaler(scaler_name):
     # load scaler model
-    home_dir = os.path.dirname(os.getcwd()).replace(' ','\ ')+ "/Forecast-service/data/"
+    home_dir =os.path.dirname(os.path.dirname(os.getcwd()).replace(' ','\ '))+ "/data/"
     scaler_filename = home_dir+scaler_name
     scaler = joblib.load(scaler_filename) 
     return scaler
 
 
-def load_raw_normalized(raw_normalized_name):
-    home_dir = os.path.dirname(os.getcwd()).replace(' ','\ ')+ "/Forecast-service/data/"
-    raw_normalized_filename = home_dir +raw_normalized_name+".npy"
-    raw_normalized = np.load(raw_normalized_filename) 
-    return raw_normalized
+def load_ndarray(ndarray_name):
+    home_dir = os.path.dirname(os.path.dirname(os.getcwd()).replace(' ','\ '))+ "/data/"
+    ndarray_filename = home_dir +ndarray_name+".npy"
+    ndarray = np.load(ndarray_filename) 
+    return ndarray
