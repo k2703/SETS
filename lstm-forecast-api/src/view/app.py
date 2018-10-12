@@ -1,62 +1,72 @@
-import helpers
+from flask import Flask, jsonify, request
+from controller.lstm import LSTMSeries
 
-
-
-
-def load_state(train_values_name, model_name):
-    train_values = helpers.load_ndarray(train_values_name)
-    lstm_model = helpers.load_model(model_name)
-    return train_values, lstm_model
-
+import numpy as np
+import logging
 
 
 
 
 
-
-if __name__ == "__main__":
-    train_vaues, lstm_model = load_state('FGE',"FGE_model_1_train_state")
-
-
-
-
-
-'''
-#!flask/bin/pythonp
-from flask import Flask, jsonify
-
+# set global vars
 app = Flask(__name__)
 
-tasks = [
-    {
-        'id': 1,
-        'title': u'Buy groceries',
-        'description': u'Milk, Cheese, Pizza, Fruit, Tylenol', 
-        'done': False
-    },
-    {
-        'id': 2,
-        'title': u'Learn Python',
-        'description': u'Need to find a good Python tutorial on the web', 
-        'done': False
-    }
-]
+def start():
+    """ Starts a REST server with Cognitive Tagging API """
+    # debug
+    logging.info("--- Start LSTM Forecast API ---")
+    logging.info("Load model ...")
 
-@app.route('/todo/api/v1.0/tasks', methods=['GET'])
-def get_tasks():
-    return jsonify({'tasks': tasks})
+    global lstm
+    lstm = LSTMSeries('FGE_train_values','FGE_model_1','FGE_scaler')
+
+    logging.info("Initialize model ...")
+
+    lstm.init_state('FGE_train_normalized')
+    
+    logging.info("Start web service ...")
+    app.run(host='0.0.0.0')
 
 
-@app.route('/todo/api/v1.0/tasks/<int:task_id>', methods=['GET'])
-def get_task(task_id):
-    task = [task for task in tasks if task['id'] == task_id]
-    if len(task) == 0:
-        abort(404)
-    return jsonify({'task': task[0]})
+# handle error 500  Internal Server Error
+@app.errorhandler(500)
+def internal_error(error):
+    return jsonify({'error': "Internal Server Error. Bitte die Logdatei für Details anschauen."}), 500
 
 
- # http://127.0.0.1:5000/todo/api/v1.0/tasks
+# handle error 400 Bad Response  
+@app.errorhandler(400)
+def internal_error_400(error):
+    return jsonify({'error': "Die Anfrage wurde syntaktisch falsch erstellt."}), 400
 
-if __name__ == '__main__':
-    app.run(debug=True)
-'''
+
+
+@app.route('/lstmforecast/append', methods=['POST'])
+def append():
+
+    # Handle optional params
+    if request.json.get('observation') == None:
+        observation = None
+    else:
+        observation = request.json.get('observation')
+    
+    print(observation)
+    # append value
+    lstm.append(float(observation))
+
+    # logging
+    logging.info("Response for "+ str(request.remote_addr) + ": observation: '"+ observation + "' appended to series.")
+
+    return jsonify({'observation': observation}), 201
+
+
+
+@app.route('/lstmforecast/predict', methods=['GET'])
+def do_lstm_forecast():
+
+    value = lstm.predict()   
+
+    # logging
+    logging.info("Response for "+ str(request.remote_addr) + ": Forecast: "+ str(value))
+
+    return jsonify({'tasks': str(value)}), 200

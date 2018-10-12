@@ -1,2 +1,8 @@
-lstm-forecast-api/data/
-lstm-forecast-api/models/
+lstm-forecast-api/src/model/data/
+lstm-forecast-api/src/model/models/
+*.cache/
+**/__pycache__/
+*/__pycache__/
+__pycache__/
+*.pyc
+

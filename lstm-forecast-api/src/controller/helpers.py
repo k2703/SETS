@@ -1,24 +1,15 @@
 import pandas as pd 
 from sklearn.metrics import mean_squared_error
 from math import sqrt
-from matplotlib import pyplot as plt
 from sklearn.metrics import mean_squared_error
 from sklearn.preprocessing import MinMaxScaler
-from keras.models import Sequential
-from keras.layers import Dense
-from keras.layers import LSTM
 import numpy as np
-plt.rcParams["figure.figsize"] = (15,7)
 import os
-from plotly import __version__
-from plotly.offline import download_plotlyjs, init_notebook_mode, plot, iplot
-print(__version__)# requires version >= 1.9.0
-import plotly
-import plotly.graph_objs as go
 from datetime import datetime
-import os
 from keras.models import model_from_json
 from sklearn.externals import joblib
+
+
 def read_electricity_p(appliances = None, 
                        limit = None, 
                        filename = 'Electricity_P.csv'):
@@ -129,6 +120,8 @@ def invert_normalize(scaler, series_raw, series_predictions_normalized):
     #print(series_predictions_scaled[0:10])
     # invert transform
     tmp = list()
+    #print('>>>>>>>')
+    #print(series_raw)
     for i in range(len(series_predictions_scaled)):
         #if i < 10:
         #    print("step " + str(i))
@@ -192,11 +185,12 @@ def fit_lstm(train, batch_size, nb_epoch, neurons, raw_normalized, scaler):
     return model, train_err_hist, test_err_hist
 
 
+
 def save_model(lstm_model, model_name):
 
     # serialize model to JSON
     lstm_model_json = lstm_model.to_json()
-    home_dir = os.path.dirname(os.path.dirname(os.getcwd()).replace(' ','\ '))+ "/models/"
+    home_dir = os.path.dirname(os.getcwd().replace(' ','\ '))+ "/src/model/models/"
     with open(home_dir+model_name +".json" , "w") as json_file:
         json_file.write(lstm_model_json)
 
@@ -205,19 +199,19 @@ def save_model(lstm_model, model_name):
 
     
 def save_scaler(scaler, scaler_name):
-    home_dir = os.path.dirname(os.path.dirname(os.getcwd()).replace(' ','\ '))+ "/data/"
+    home_dir = os.path.dirname(os.getcwd()).replace(' ','\ ')+ "/src/model/data/"
     scaler_filename = home_dir +scaler_name
     joblib.dump(scaler, scaler_filename) 
     
     
 def save_ndarray(ndarray, ndarray_name):
-    home_dir = os.path.dirname(os.path.dirname(os.getcwd()).replace(' ','\ '))+ "/data/"
+    home_dir = os.path.dirname(os.getcwd()).replace(' ','\ ')+ "/src/model/data/"
     ndarray_filename = home_dir +ndarray_name + ".npy"
     np.save(ndarray_filename, ndarray) 
     
 
 def load_model(model_name):
-    home_dir = os.path.dirname(os.path.dirname(os.getcwd()).replace(' ','\ '))+ "/models/"
+    home_dir = os.path.dirname(os.getcwd()).replace(' ','\ ')+ "/src/model/models/"
 
     # load json and create model
     json_file = open(home_dir+model_name+".json", 'r')
@@ -233,14 +227,14 @@ def load_model(model_name):
     
 def load_scaler(scaler_name):
     # load scaler model
-    home_dir =os.path.dirname(os.path.dirname(os.getcwd()).replace(' ','\ '))+ "/data/"
+    home_dir =os.path.dirname(os.getcwd()).replace(' ','\ ')+ "/src/model/data/"
     scaler_filename = home_dir+scaler_name
     scaler = joblib.load(scaler_filename) 
     return scaler
 
 
 def load_ndarray(ndarray_name):
-    home_dir = os.path.dirname(os.path.dirname(os.getcwd()).replace(' ','\ '))+ "/data/"
+    home_dir = os.path.dirname(os.getcwd()).replace(' ','\ ')+ "/src/model/data/"
     ndarray_filename = home_dir +ndarray_name+".npy"
     ndarray = np.load(ndarray_filename) 
     return ndarray
