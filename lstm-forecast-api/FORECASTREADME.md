@@ -1,4 +1,18 @@
-## Metadata Information
+# Projectinformations for user
+***
+
+## Access to API
+***
+
+'''bash
+curl -H "Content-Type: application/json" -X POST -d '{"observation":"59.51666667"}' http://localhost:5000/lstmforecast/append
+'''
+
+'''bash
+curl -H "Content-Type: application/json" -X GET  http://localhost:5000/lstmforecast/predict
+'''
+
+## Data Source Information
 ***
 
 Data can be downloaded at 
@@ -15,5 +29,7 @@ https://www.nature.com/articles/sdata201637#t3.
 
 
 ## Useful Blog for deploying your application as a RESTful service
+***
 
 https://blog.miguelgrinberg.com/post/designing-a-restful-api-with-python-and-flask
+
