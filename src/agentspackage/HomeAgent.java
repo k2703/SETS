@@ -1,6 +1,7 @@
 package agentspackage;
 
 import jade.core.Agent;
+
 import jade.core.AID;
 import jade.core.behaviours.*;
 
@@ -11,7 +12,14 @@ import jade.domain.FIPAAgentManagement.*;
 
 import jade.lang.acl.*;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 public class HomeAgent extends Agent {
+	// TODO figure out if this enum is pointless
+	// I'm just using it to prevent issues from typos when sending messages
+	enum MessageContents {
+		START_NEGOTIATION
+	}
 	
     protected void setup() 
     {
@@ -30,6 +38,22 @@ public class HomeAgent extends Agent {
     	// ping the retailers, then ping the appliances (FOR TESTING)
     	pingDF(retailers);
     	pingDF(appliances);
+    	
+    	int powerRequired = findPowerRequired(appliances);
+    	requestPower(retailers, powerRequired);
+    }
+    
+    void requestPower(DFAgentDescription[] retailers, int powerRequired) {
+    	// create an ACL message to ask for power
+    	ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
+    	// TODO send message to begin negotiation with retail agents
+    	msg.setContent(MessageContents.START_NEGOTIATION.name());
+    }
+    
+    int findPowerRequired(DFAgentDescription[] appliances) {
+    	// TODO loop through all appliances and estimate amount of power required?
+    	// just return a random one for now
+    	return ThreadLocalRandom.current().nextInt(100, 1000 + 1);
     }
     
     // function for registering the Home to the DFService
