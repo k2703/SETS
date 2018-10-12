@@ -15,10 +15,12 @@ import jade.lang.acl.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class HomeAgent extends Agent {
+	
 	// TODO figure out if this enum is pointless
 	// I'm just using it to prevent issues from typos when sending messages
 	enum MessageContents {
-		START_NEGOTIATION
+		REQUEST_NEGOTIATION,
+		AGREE_NEGOTIATION,
 	}
 	
     protected void setup() 
@@ -36,18 +38,26 @@ public class HomeAgent extends Agent {
     	DFAgentDescription[] appliances = searchDF("appliance");
     	
     	// ping the retailers, then ping the appliances (FOR TESTING)
-    	pingDF(retailers);
-    	pingDF(appliances);
+    	//pingDF(retailers);    	
+    	//pingDF(appliances);
     	
     	int powerRequired = findPowerRequired(appliances);
     	requestPower(retailers, powerRequired);
     }
     
+    
     void requestPower(DFAgentDescription[] retailers, int powerRequired) {
     	// create an ACL message to ask for power
     	ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
     	// TODO send message to begin negotiation with retail agents
-    	msg.setContent(MessageContents.START_NEGOTIATION.name());
+    	msg.setContent(MessageContents.REQUEST_NEGOTIATION.name());
+    	System.out.println(getLocalName() + ": sending negotiation req to:");
+    	for (int i = 0; i < retailers.length; i++) {
+    		System.out.println("\t" + retailers[i].getName());
+    		msg.addReceiver(retailers[i].getName());
+    	}
+    	send(msg);
+    	
     }
     
     int findPowerRequired(DFAgentDescription[] appliances) {
@@ -114,17 +124,26 @@ public class HomeAgent extends Agent {
     	// send the message
     	send(msg);
     	
-    	// add a new cyclic behaviour which waits for a response
-    	addBehaviour(new CyclicBehaviour(this)
+    	// add a new ticker behaviour which waits for a response
+    	addBehaviour(new TickerBehaviour(this, 1000) 
     	{
-    		public void action() {
+    		int i;
+    		public void onStart() {
+    			i = 0;
+    		}
+    		public void onTick() {
     			ACLMessage msg = receive();
     			if (msg!=null) {
+    				i++;
     				System.out.println(getLocalName() + ": received answer '" + msg.getContent() + "' from " + msg.getSender().getName());
     			}
-    			block();
+    			if (i >= aRecipients.length) {
+    				System.out.println(getLocalName() + " : received responses from all agents.");
+    				stop();
+    			}
     		}
     	});
+    	
     }
 }
 
