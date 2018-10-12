@@ -12,11 +12,14 @@ public class ApplianceAgent extends Agent {
 	
     protected void setup() 
     {
+    	// create a new service description for this Appliance
     	ServiceDescription sd = new ServiceDescription();
     	sd.setType("appliance");
     	sd.setName(getLocalName());
+    	// register it to the DFService
     	register(sd);
     	
+    	// add a CyclicBehaviour which waits for an ACL message to be received    	
     	addBehaviour(new CyclicBehaviour(this)
     	{
     		public void action() {
@@ -33,13 +36,17 @@ public class ApplianceAgent extends Agent {
     	});
     }
     
+    // function for registering the Appliance to the DFService
     void register(ServiceDescription sd)
     {
+    	// create a new DFAgentDescription
     	DFAgentDescription dfd = new DFAgentDescription();
     	dfd.setName(getAID());
-    	dfd.addServices(sd);;
+    	// pass our description of this Appliance DFAgentDesc
+    	dfd.addServices(sd);
     	
     	try {
+    		// register THIS Appliance with our constructed description
     		DFService.register(this, dfd);
     	}
     	catch (FIPAException fe) {
