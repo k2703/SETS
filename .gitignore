@@ -3,6 +3,8 @@ lstm-forecast-api/src/model/models/
 *.cache/
 **/__pycache__/
 */__pycache__/
-__pycache__/
+lstm-forecast-api/__pycache__
+lstm-forecast-api/src/controller/__pycache__
+lstm-forecast-api/src/view/__pycache__
 *.pyc
 
