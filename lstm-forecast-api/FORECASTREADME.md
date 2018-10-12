@@ -4,13 +4,15 @@
 ## Access to API
 ***
 
-'''bash
-curl -H "Content-Type: application/json" -X POST -d '{"observation":"59.51666667"}' http://localhost:5000/lstmforecast/append
-'''
 
-'''bash
+
+```bash
+curl -H "Content-Type: application/json" -X POST -d '{"observation":"59.51666667"}' http://localhost:5000/lstmforecast/append
+```
+
+```bash
 curl -H "Content-Type: application/json" -X GET  http://localhost:5000/lstmforecast/predict
-'''
+```
 
 ## Data Source Information
 ***
