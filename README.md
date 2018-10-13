@@ -23,7 +23,7 @@ With Main class jade.Boot
 * arg1: Negotiation Strategy
 Please ensure you adjust the Run Config as required.
 
-## Implemented Pricing Mechanisms
+## List of Implemented Pricing Mechanisms
 * random
 
 ## List of Implemented Negotiation Strategies
