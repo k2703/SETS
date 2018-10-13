@@ -12,12 +12,13 @@ logging.basicConfig(
 # main method
 def main():
     
-    app_rest.start()
+    app_rest.start(appliances = ['FGE','HTE'])
     
     
 # start main method
 if __name__ == '__main__':
     main()
+
 
 
 

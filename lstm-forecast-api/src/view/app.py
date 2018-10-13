@@ -5,27 +5,36 @@ import numpy as np
 import logging
 
 
-
-
-
 # set global vars
 app = Flask(__name__)
 
-def start():
+def start(appliances):
     """ Starts a REST server with Cognitive Tagging API """
     # debug
     logging.info("--- Start LSTM Forecast API ---")
     logging.info("Load model ...")
 
-    global lstm
-    lstm = LSTMSeries('FGE_train_values','FGE_model_1','FGE_scaler')
+    global lstm_models
+    lstm_models = {}
 
-    logging.info("Initialize model ...")
-
-    lstm.init_state('FGE_train_normalized')
+    for appliance in appliances:
+        logging.info("Initialize model for appliance: " + appliance)
+        lstm_models[appliance] = LSTMSeries(appliance + '_train_values',appliance+'_model_1',appliance+'_scaler')
+        lstm_models[appliance].init_state(appliance+'_train_normalized')
     
     logging.info("Start web service ...")
     app.run(host='0.0.0.0')
+
+
+"""global lstm
+lstm = LSTMSeries('FGE_train_values','FGE_model_1','FGE_scaler')
+
+logging.info("Initialize model ...")
+
+lstm.init_state('FGE_train_normalized')
+
+logging.info("Start web service ...")
+app.run(host='0.0.0.0')"""
 
 
 # handle error 500  Internal Server Error
@@ -41,8 +50,8 @@ def internal_error_400(error):
 
 
 
-@app.route('/lstmforecast/append', methods=['POST'])
-def append():
+@app.route('/lstmforecast/<string:appliance>/append', methods=['POST'])
+def append(appliance):
 
     # Handle optional params
     if request.json.get('observation') == None:
@@ -52,7 +61,7 @@ def append():
     
     print(observation)
     # append value
-    lstm.append(float(observation))
+    lstm_models[appliance].append(float(observation))
 
     # logging
     logging.info("Response for "+ str(request.remote_addr) + ": observation: '"+ observation + "' appended to series.")
@@ -61,10 +70,10 @@ def append():
 
 
 
-@app.route('/lstmforecast/predict', methods=['GET'])
-def do_lstm_forecast():
+@app.route('/lstmforecast/<string:appliance>/predict', methods=['GET'])
+def do_lstm_forecast(appliance):
 
-    value = lstm.predict()   
+    value = lstm_models[appliance].predict()   
 
     # logging
     logging.info("Response for "+ str(request.remote_addr) + ": Forecast: "+ str(value))
