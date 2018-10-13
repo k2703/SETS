@@ -1,12 +1,15 @@
 # SETS
 Smart Energy Trading System
 
-## Features
+## Current Features
 HomeAgent will search for all retailers/appliances and store them.
+
 HomeAgent will request to buy with an internal set price, will begin negotiation.
+
 HomeAgent and RetailAgent will negotiate...
-* HomeAgent does not change its price - this needs to be implemented.
+* HomeAgent does not change its price - this needs to be implemented.  
 * RetailAgent will set and change its price via mechanism/strategy specified in the run config.
+
 Negotiation will continue until HomeAgent is satisfied.
 * This only occurs once, needs to repeat hourly.
 
