@@ -63,19 +63,36 @@ public class RetailAgent extends Agent {
         	// add a CyclicBehaviour which waits for an ACL message to be received  
         	addBehaviour(new CyclicBehaviour(this)
         	{
+        		int price = 0;
         		public void action() {
         			ACLMessage reply;
         			ACLMessage msg = receive();
         			if (msg!=null) {
-        				System.out.println(getLocalName() + ": received '" + msg.getContent() + "' from " + msg.getSender().getName());
-        				if (msg.getPerformative() == ACLMessage.REQUEST && msg.getContent().equalsIgnoreCase(MessageContents.REQUEST_NEGOTIATION.toString()));
-        				{
+        				System.out.println(getLocalName() + ": received '" + ACLMessage.getPerformative(msg.getPerformative()) + " - " + msg.getContent() + "' from " + msg.getSender().getName());
+        				
+        				// if home is requesting to negotiate
+        				if (msg.getPerformative() == ACLMessage.REQUEST && msg.getContent().equalsIgnoreCase(MessageContents.REQUEST_NEGOTIATION.toString())) {
         					reply = msg.createReply();
         					reply.setPerformative(ACLMessage.AGREE);
         					if (selectedMechanism == PricingMechanism.RANDOM) {
-        						reply.setContent(Integer.toString(ThreadLocalRandom.current().nextInt(100, 1000 + 1)));
+        						price = ThreadLocalRandom.current().nextInt(100, 1000 + 1);
+        						reply.setContent(Integer.toString(price));
         					}
              				send(reply);
+        				}
+        				
+        				// if home has refused an offer
+        				if (msg.getPerformative() == ACLMessage.REFUSE) {
+        					if (msg.getContent() == null) {
+        						reply = msg.createReply();
+        						if (selectedStrategy == NegotiationStrategy.REDUCE10) {
+        							price -= price/10;
+        							System.out.println(getLocalName() + ": reducing price by 10%...");
+        							reply.setContent(Integer.toString(price));
+        							send(reply);
+        						}
+        						
+        					}
         				}
         				
         			}

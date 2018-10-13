@@ -49,6 +49,7 @@ public class HomeAgent extends Agent {
     
     
     void requestPower(DFAgentDescription[] retailers, int powerRequired, int startingPrice) {
+    		
     	// create an ACL message to ask for power
     	ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
     	// TODO send message to begin negotiation with retail agents
@@ -81,19 +82,63 @@ public class HomeAgent extends Agent {
     			}
     		}
     		public int onEnd() {
-    			beginNegotiation(received, startingPrice);
+    			startNegotiation(received, startingPrice);
     			return 0;
     		}
     	});
     	
+    	addBehaviour(new TickerBehaviour(this, 1000)
+    	{
+    		// TODO fix this
+    		int currentLowest = 99999999;
+    		public void onTick() {
+    			ACLMessage msg = receive(), reply;
+    			if (msg!=null) {
+    				System.out.println(getLocalName() + ": received answer '" + msg.getContent() + "' from " + msg.getSender().getName());
+            		System.out.println("Starting price: " + startingPrice);
+            		System.out.println("Proposed price: " + msg.getContent());
+    				currentLowest = comparePrice(msg, currentLowest);
+    				if (currentLowest <= startingPrice) {
+        				stop();
+        			}
+        			else {
+        				reply = msg.createReply();
+            			reply.setPerformative(ACLMessage.REFUSE);
+            			send(reply);
+        			}
+    			}
+    			
+    		}
+    		public int onEnd() {
+    			System.out.println(getLocalName() + ": accepting price of " + currentLowest);
+    			ACLMessage reply = msg.createReply();
+    			reply.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
+    			send(reply);
+    			return 0;
+    		}
+    	});    	
     }
     
-    void beginNegotiation(ArrayList<ACLMessage> received, int startingPrice) {
+	int comparePrice(ACLMessage msg, int currentLowest) {
+		int result;
+		if (Integer.parseInt(msg.getContent()) < currentLowest) {
+			result = Integer.parseInt(msg.getContent());
+		} else {
+			result = currentLowest;
+		}
+		
+		return result;
+	}
+    
+    
+    void startNegotiation(ArrayList<ACLMessage> received, int startingPrice) {
     	ACLMessage reply;
-    	for (ACLMessage msg : received) {
+		
+		for (ACLMessage msg : received) {
     		System.out.println("Starting price: " + startingPrice);
     		System.out.println("Proposed price: " + msg.getContent());
     		if (Integer.parseInt(msg.getContent()) <= startingPrice) {
+    			System.out.println(getLocalName() + ": accepting price of " + msg.getContent());
     			reply = msg.createReply();
     			reply.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
     			send(reply);
@@ -105,9 +150,10 @@ public class HomeAgent extends Agent {
     			reply.setPerformative(ACLMessage.REFUSE);
     			send(reply);
     		}
-    	}
+    	}	
     }
     
+    // TODO this is unused, needs to be generated from ApplianceAgent?
     int findPowerRequired(DFAgentDescription[] appliances) {
     	// TODO loop through all appliances and estimate amount of power required?
     	// just return a random one for now
