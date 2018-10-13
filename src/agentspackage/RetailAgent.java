@@ -1,5 +1,7 @@
 package agentspackage;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 import jade.core.Agent;
 import jade.core.behaviours.*;
 
@@ -10,6 +12,10 @@ import jade.domain.FIPAException;
 
 public class RetailAgent extends Agent {
 	final int EXPECTED_ARG_COUNT = 2;
+	
+	// initialize mechanism and strategy
+	PricingMechanism selectedMechanism;
+	NegotiationStrategy selectedStrategy;
 	
 	// TODO figure out if this enum is pointless
 	// I'm just using it to prevent issues from typos when sending messages
@@ -36,10 +42,7 @@ public class RetailAgent extends Agent {
     	// retail agent requires pricing mechanism argument
     	Object[] args = getArguments();
     	if (args != null && args.length == EXPECTED_ARG_COUNT && checkArgs((String[])args)) {
-    		// initialize mechanism and strategy
-    		PricingMechanism selectedMechanism;
-    		NegotiationStrategy selectedStrategy;
-    		
+   		
     		// first agent argument is mechanism
     		if (args[0].equals("random")) {
     			selectedMechanism = PricingMechanism.RANDOM;
@@ -69,7 +72,9 @@ public class RetailAgent extends Agent {
         				{
         					reply = msg.createReply();
         					reply.setPerformative(ACLMessage.AGREE);
-             				reply.setContent(MessageContents.AGREE_NEGOTIATION.toString());
+        					if (selectedMechanism == PricingMechanism.RANDOM) {
+        						reply.setContent(Integer.toString(ThreadLocalRandom.current().nextInt(100, 1000 + 1)));
+        					}
              				send(reply);
         				}
         				

@@ -12,10 +12,10 @@ import jade.domain.FIPAAgentManagement.*;
 
 import jade.lang.acl.*;
 
+import java.util.ArrayList;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class HomeAgent extends Agent {
-	
 	// TODO figure out if this enum is pointless
 	// I'm just using it to prevent issues from typos when sending messages
 	enum MessageContents {
@@ -42,11 +42,13 @@ public class HomeAgent extends Agent {
     	//pingDF(appliances);
     	
     	int powerRequired = findPowerRequired(appliances);
-    	requestPower(retailers, powerRequired);
+    	// placeholder
+    	int startingPrice = 10;
+    	requestPower(retailers, powerRequired, startingPrice);
     }
     
     
-    void requestPower(DFAgentDescription[] retailers, int powerRequired) {
+    void requestPower(DFAgentDescription[] retailers, int powerRequired, int startingPrice) {
     	// create an ACL message to ask for power
     	ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
     	// TODO send message to begin negotiation with retail agents
@@ -58,6 +60,52 @@ public class HomeAgent extends Agent {
     	}
     	send(msg);
     	
+    	// add a new ticker behaviour which waits for a response
+    	addBehaviour(new TickerBehaviour(this, 1000) 
+    	{
+    		int i;
+    		ArrayList<ACLMessage> received = new ArrayList<ACLMessage>();
+    		public void onStart() {
+    			i = 0;
+    		}
+    		public void onTick() {
+    			ACLMessage msg = receive();
+    			if (msg!=null) {
+    				i++;
+    				System.out.println(getLocalName() + ": received answer '" + msg.getContent() + "' from " + msg.getSender().getName());
+    				received.add(msg);
+    			}
+    			if (i >= retailers.length) {
+    				System.out.println(getLocalName() + ": received responses from all agents.");
+    				stop();
+    			}
+    		}
+    		public int onEnd() {
+    			beginNegotiation(received, startingPrice);
+    			return 0;
+    		}
+    	});
+    	
+    }
+    
+    void beginNegotiation(ArrayList<ACLMessage> received, int startingPrice) {
+    	ACLMessage reply;
+    	for (ACLMessage msg : received) {
+    		System.out.println("Starting price: " + startingPrice);
+    		System.out.println("Proposed price: " + msg.getContent());
+    		if (Integer.parseInt(msg.getContent()) <= startingPrice) {
+    			reply = msg.createReply();
+    			reply.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
+    			send(reply);
+    			// break out of the for loop? should wait to see if someone is offering a lower price this round
+    			break;
+    		} else {
+    			System.out.println(getLocalName() + ": refusing price of " + msg.getContent());
+    			reply = msg.createReply();
+    			reply.setPerformative(ACLMessage.REFUSE);
+    			send(reply);
+    		}
+    	}
     }
     
     int findPowerRequired(DFAgentDescription[] appliances) {
