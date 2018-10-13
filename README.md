@@ -11,7 +11,7 @@ HomeAgent and RetailAgent will negotiate...
 * RetailAgent will set and change its price via mechanism/strategy specified in the run config.
 
 Negotiation will continue until HomeAgent is satisfied.
-* This only occurs once, needs to repeat hourly.
+* This only occurs once, needs to repeat hourly/whatever the desired timeframe is.
 
 ## Run Configuration
 `-gui -agents Home:agentspackage.HomeAgent;AirCon:agentspackage.ApplianceAgent;ElectricCar:agentspackage.ApplianceAgent;SolarPanel:agentspackage.ApplianceAgent;ErgonEnergy:agentspackage.RetailAgent(random,reduce10);SumoPower:agentspackage.RetailAgent(random,reduce10);Powerdirect:agentspackage.RetailAgent(random,reduce10)`
