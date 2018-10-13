@@ -12,7 +12,7 @@ logging.basicConfig(
 # main method
 def main():
     
-    app_rest.start(appliances = ['FGE','HTE'])
+    app_rest.start(appliances = ['FGE','HTE','TVE'])
     
     
 # start main method
