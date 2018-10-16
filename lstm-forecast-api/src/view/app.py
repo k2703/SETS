@@ -78,4 +78,4 @@ def do_lstm_forecast(appliance):
     # logging
     logging.info("Response for "+ str(request.remote_addr) + ": Forecast: "+ str(value))
 
-    return jsonify({'tasks': str(value)}), 200
+    return jsonify({'prediction': str(value)}), 200
