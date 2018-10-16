@@ -50,28 +50,19 @@ def internal_error_400(error):
 
 
 
-@app.route('/lstmforecast/<string:appliance>/append', methods=['POST'])
+@app.route('/lstmforecast/<string:appliance>/predict', methods=['POST'])
 def append(appliance):
 
     # Handle optional params
-    if request.json.get('observation') == None:
-        observation = None
-    else:
+    if request.json.get('observation') != '' :
+
         observation = request.json.get('observation')
-    
-    print(observation)
-    # append value
-    lstm_models[appliance].append(float(observation))
+        
+        # append value
+        lstm_models[appliance].append(float(observation))
 
-    # logging
-    logging.info("Response for "+ str(request.remote_addr) + ": observation: '"+ observation + "' appended to series.")
-
-    return jsonify({'observation': observation}), 201
-
-
-
-@app.route('/lstmforecast/<string:appliance>/predict', methods=['GET'])
-def do_lstm_forecast(appliance):
+        # logging
+        logging.info("Response for "+ str(request.remote_addr) + ": observation: '"+ observation + "' appended to series.")
 
     value = lstm_models[appliance].predict()   
 
