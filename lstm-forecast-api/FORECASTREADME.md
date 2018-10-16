@@ -7,11 +7,11 @@
 
 
 ```bash
-curl -H "Content-Type: application/json" -X POST -d '{"observation":"59.51666667"}' http://localhost:115.146.92.150:5000/lstmforecast/FGE/append
+curl -H "Content-Type: application/json" -X POST -d '{"observation":"59.51666667"}' http://115.146.92.150:5000/lstmforecast/FGE/append
 ```
 
 ```bash
-curl -H "Content-Type: application/json" -X GET  http://localhost:115.146.92.150:5000/lstmforecast/FGE/predict
+curl -H "Content-Type: application/json" -X GET  http://115.146.92.150:5000/lstmforecast/FGE/predict
 ```
 
 ## Data Source Information
