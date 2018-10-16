@@ -7,12 +7,10 @@
 
 
 ```bash
-curl -H "Content-Type: application/json" -X POST -d '{"observation":"59.51666667"}' http://115.146.92.150:5000/lstmforecast/FGE/append
+curl -H "Content-Type: application/json" -X POST -d '{"observation":"59.51666667"}' http://115.146.92.150:5000/lstmforecast/FGE/predict
 ```
 
-```bash
-curl -H "Content-Type: application/json" -X GET  http://115.146.92.150:5000/lstmforecast/FGE/predict
-```
+Be aware that you can change the appliance as needed! (Hence you might replace 'FGE' in the url in the example above).
 
 ## Data Source Information
 ***
