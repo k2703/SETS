@@ -9,7 +9,7 @@
 ```bash
 
 # deploy model 
-curl -H "Content-Type: application/json" -X POST -d '{"appliances":["FGE","HTE"]}' http://115.146.92.150:5000/lstmforecast/deploy-model
+curl -H "Content-Type: application/json" -X POST -d '{"appliances":["FGE","HTE","TVE"]}' http://115.146.92.150:5000/lstmforecast/deploy-model
 
 # pullback model 
 curl -H "Content-Type: application/json" -X POST -d '' http://115.146.92.150:5000/lstmforecast/pullback-model
