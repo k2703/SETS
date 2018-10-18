@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, request
 from controller.lstm import LSTMSeries
+from keras import backend as K
 
 import numpy as np
 import logging
@@ -50,6 +51,7 @@ def deploymodel():
 def pullbackmodel():
     global lstm_models 
     lstm_models = {}
+    K.clear_session()
     return jsonify({'currently-deployed-models': str(list(lstm_models.keys()))}), 200
 
 

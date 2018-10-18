@@ -10,6 +10,7 @@ from keras.models import model_from_json
 from sklearn.externals import joblib
 
 
+
 def read_electricity_p(appliances = None, 
                        limit = None, 
                        filename = 'Electricity_P.csv'):
