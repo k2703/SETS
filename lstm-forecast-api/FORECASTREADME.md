@@ -7,6 +7,14 @@
 
 
 ```bash
+
+# deploy model 
+curl -H "Content-Type: application/json" -X POST -d '{"appliances":["FGE"]}' http://115.146.92.150:5000/lstmforecast/deploy-model
+
+# pullback model 
+curl -H "Content-Type: application/json" -X POST -d '' http://115.146.92.150:5000/lstmforecast/pullback-model
+
+# append current observation and retrieve prediction
 curl -H "Content-Type: application/json" -X POST -d '{"observation":"59.51666667"}' http://115.146.92.150:5000/lstmforecast/FGE/predict
 ```
 
