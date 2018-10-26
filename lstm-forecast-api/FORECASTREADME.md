@@ -18,35 +18,6 @@ curl -H "Content-Type: application/json" -X POST -d '{"observation":"59.51666667
 
 Be aware that you can change the appliance as needed! (Hence you might replace 'FGE' in the url in the example above).
 
-## Data Source Information
-***
-
-#### Data of energy consumption appliances
-
-Data can be downloaded at 
-https://dataverse.harvard.edu/file.xhtml?persistentId=doi:10.7910/DVN/FIE0S4/FS26TX&version=1.2.
-
-Information to table column names are provided in the following table: 
-https://www.nature.com/articles/sdata201637/tables/4.
-
-The Paper corresponding to the data set:
-https://www.nature.com/articles/sdata201637#t3.
-
-#### Data of energy providing appliances
-
-The solar panel data set download link is: 
-http://smart.cs.umass.edu/download.php?t=solar-panels&y=2017. 
-
-It can be found at: 
-http://traces.cs.umass.edu/index.php/Smart/Smart.
-
-Unfortunately data is not provided for the entire day, only in the interval from 5am - 21pm. The remaining values are filled up automatically by using the last observed value.
-
-
-## Useful Blog for deploying your application as a RESTful service
-***
-
-https://blog.miguelgrinberg.com/post/designing-a-restful-api-with-python-and-flask
 
 ## Results 
 
@@ -76,4 +47,32 @@ https://blog.miguelgrinberg.com/post/designing-a-restful-api-with-python-and-fla
 | WHE     | whole-house power | 710.427 / 739.275 | 935.764 / 931.615 | + 31.72 % / + 26.02 % |
 | WOE     | kitchen convection wall oven | 104.574 / 110.679 | 82.980 / 88.151 | - 20.65 % / - 20.35 % |
 
+## Data Source Information
+***
 
+#### Data of energy consumption appliances
+
+Data can be downloaded at 
+https://dataverse.harvard.edu/file.xhtml?persistentId=doi:10.7910/DVN/FIE0S4/FS26TX&version=1.2.
+
+Information to table column names are provided in the following table: 
+https://www.nature.com/articles/sdata201637/tables/4.
+
+The Paper corresponding to the data set:
+https://www.nature.com/articles/sdata201637#t3.
+
+#### Data of energy providing appliances
+
+The solar panel data set download link is: 
+http://smart.cs.umass.edu/download.php?t=solar-panels&y=2017. 
+
+It can be found at: 
+http://traces.cs.umass.edu/index.php/Smart/Smart.
+
+Unfortunately data is not provided for the entire day, only in the interval from 5am - 21pm. The remaining values are filled up automatically by using the last observed value.
+
+
+## Useful Blog for deploying your application as a RESTful service
+**
+
+https://blog.miguelgrinberg.com/post/designing-a-restful-api-with-python-and-flask
