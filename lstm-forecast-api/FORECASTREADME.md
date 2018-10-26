@@ -41,4 +41,32 @@ https://www.nature.com/articles/sdata201637#t3.
 
 https://blog.miguelgrinberg.com/post/designing-a-restful-api-with-python-and-flask
 
+## Results 
+
+| Appliance Model  | Description      | Baseline Model Train RMSE / Test RMSE | LSTM Model Train RMSE / Test RMSE | Relative RMSE change for Train / Test |
+| --------------|------|-------------|-----|-----|
+| B1E     |  north bedroom plugs and lights | 5.068 / 5.249 | 4.167 / 4.181 | - 17.78 % / - 20.35 % |
+| B2E     |  master and south bedroom plugs and lights | 24.504 / 33.194 | 23.357 / 31.542 | - 4.68 % / - 4.98 % |
+| BME     |  some of the basement plugs and lights | 88.206 / 82.306 | 77.472 / 74.938 | - 12.17 % / - 9.61 % |
+| CDE     |  clothes dryer | 19.295 / 25.929 | 16.862 / 20.031 | - 16.28 % / - 22.75 % |
+| CWE     |  front loading clothes washer | 24.051 / 24.802 | 20.006 / 20.949 | - 16.82 % / - 15.54 % |
+| DNE     |  dining room plugs | 1.978 / 1.621 | 5.111 / 4.988 | + 158.39 % / + 207.71 % |
+| DWE     |  kitchen dishwasher | 70.233 / 83.242 | 58.946 / 69.807 | - 16.07 % / - 16.14 % |
+| EBE     |  electronics workbench | 15.974 / 0.013 | 13.670 / 0.023 | - 14.42 % / + 76.92 % |
+| EQE     |  security and network equipment | 0.369 / 0.391 | 0.318 / 0.345 | - 13.82 % / - 11.76 % |
+| FGE     |  kitchen fridge | 35.436 / 33.755 | 25.138 / 23.900 | - 28.88 % / - 29.20 % |
+| FRE     |  forced air furnace fan and thermostat | 19.295 / 25.929 | 18.071 / 21.687 | - 6.34 % / - 16.36 % |
+| HPE     |  heat pump | 388.431 / 462.472 | 330.201 / 384.378 | - 14.99 % / - 16.36 % |
+| HTE     |  instant hot water unit | 3.827 / 4.074 | 3.170 / 3.394 | - 17.17 % / - 16.69 % |
+| MHE     |  main house | 652.131 / 689.465 | 631.638 / 632.270 | - 3.14 % / - 8.30 % |
+| OFE     |  home office lights and plugs | 20.410 / 14.118 | 103.833 / 106.577 | + 408.74 % / 654.90 % |
+| OUE     |  outside plug | 0.123 / 0.048 | 0.104 / 0.043 | - 15.45 % / - 10.42 % |
+| RSE     |  basement rental suite | 284.186 / 298.731 | 254.582 / 267.898 | - 10.42 % / -10.32 % |
+| SPA     |  solar panel  | 0.309 / 0.318 | 0.250 / 0.260 | - 19.09 % / - 18.24 % |
+| TVE     |  entertainment equipment (TV, PVR, amplifier, and Blu-Ray)  | 50.180 / 53.954 | 44.171 / 47.873 | - 11.97 % / - 11.27 % |
+| UNE     |  unmetered soft-meter amount   | 179.775 / 189.837 | 163.362 / 167.464 | - 9.13 % / - 11.79 % | 
+| UTE     |  utility room plug  | 0.565 / 0.242 | 0.810 / 0.629 | + 43.36 % / + 159.92 % |
+| WHE     | whole-house power | 710.427 / 739.275 | 935.764 / 931.615 | + 31.72 % / + 26.02 % |
+| WOE     | kitchen convection wall oven | 104.574 / 110.679 | 82.980 / 88.151 | - 20.65 % / - 20.35 % |
+
 
