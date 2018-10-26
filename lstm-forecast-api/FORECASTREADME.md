@@ -1,8 +1,6 @@
 # Projectinformations for user
-***
 
 ## Access to API
-***
 
 ```bash
 
@@ -48,7 +46,6 @@ Be aware that you can change the appliance as needed! (Hence you might replace '
 | WOE     | kitchen convection wall oven | 104.574 / 110.679 | 82.980 / 88.151 | - 20.65 % / - 20.35 % |
 
 ## Data Source Information
-***
 
 #### Data of energy consumption appliances
 
@@ -73,6 +70,6 @@ Unfortunately data is not provided for the entire day, only in the interval from
 
 
 ## Useful Blog for deploying your application as a RESTful service
-**
+
 
 https://blog.miguelgrinberg.com/post/designing-a-restful-api-with-python-and-flask
