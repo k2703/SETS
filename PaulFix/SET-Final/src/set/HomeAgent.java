@@ -42,10 +42,10 @@ public class HomeAgent extends Agent
 		Object[] args = getArguments();
 		if (args != null && args.length > 0)
 		{
-			acceptedBuyPriceThreshold = (double) args[0];
-			setBuyingPrice = (double) args[1];
-			acceptedSellPriceThreshold = (double) args[2];
-			setSellingPrice = (double) args[3];
+			acceptedBuyPriceThreshold = Double.parseDouble(args[0].toString());
+			setBuyingPrice = Double.parseDouble(args[1].toString());
+			acceptedSellPriceThreshold = Double.parseDouble(args[2].toString());
+			setSellingPrice = Double.parseDouble(args[3].toString());
 			originalSellingPrice = setSellingPrice;
 			originalBuyingPrice = setBuyingPrice;
 			
