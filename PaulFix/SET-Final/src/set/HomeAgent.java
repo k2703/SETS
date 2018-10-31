@@ -1,6 +1,8 @@
 package set;
 
 import jade.core.Agent;
+import jade.core.behaviours.Behaviour;
+import jade.core.behaviours.OneShotBehaviour;
 import jade.core.behaviours.ParallelBehaviour;
 import jade.core.behaviours.SequentialBehaviour;
 import jade.core.behaviours.TickerBehaviour;
@@ -20,6 +22,9 @@ import java.util.Vector;
 @SuppressWarnings("serial")
 public class HomeAgent extends Agent
 {
+	private SequentialBehaviour seq;
+	private ParallelBehaviour par;
+	private boolean trade = false;
 	private double predictedDemand = 0;
 	private double predictedGeneration = 0;
 	private double actualDemand = 0;
@@ -48,35 +53,34 @@ public class HomeAgent extends Agent
 			setSellingPrice = Double.parseDouble(args[3].toString());
 			originalSellingPrice = setSellingPrice;
 			originalBuyingPrice = setBuyingPrice;
-			
+			trade = false;
+			setBuyingPrice = originalBuyingPrice;
+			setSellingPrice = originalSellingPrice;
+			predictedDemand = 0;
+			predictedGeneration = 0;
+
 			System.out.println("Acceptable price threshold set to: " + acceptedBuyPriceThreshold);
-			addBehaviour(new TickerBehaviour(this, 60000)
+			addBehaviour(new TickerBehaviour(this, 5000)
 			{
 				protected void onTick()
 				{
 					// register the services
 
-					SequentialBehaviour seq = new SequentialBehaviour();
+					seq = new SequentialBehaviour();
 					addBehaviour(seq);
 
-					ParallelBehaviour par = new ParallelBehaviour(ParallelBehaviour.WHEN_ALL);
+					par = new ParallelBehaviour(ParallelBehaviour.WHEN_ALL);
 					// Phase 1: Send request for energy demand to Appliances with consumption energy
 					// need
 					aaCAgents = getService("AAConsumer");
 					nAACResponders = aaCAgents.length;
-					ACLMessage aaCMsg = createMessage(	nAACResponders, 
-														aaCAgents, 
-														"Predicted demand?", 
-														FIPANames.InteractionProtocol.FIPA_REQUEST, 
-														ACLMessage.REQUEST);
-					
+					ACLMessage aaCMsg = createMessage(nAACResponders, aaCAgents, "Predicted demand?",
+							FIPANames.InteractionProtocol.FIPA_REQUEST, ACLMessage.REQUEST);
+
 					aaGAgents = getService("AAGenerator");
 					nAAGResponders = aaGAgents.length;
-					ACLMessage aaGMsg = createMessage(	nAAGResponders, 
-														aaGAgents, 
-														"Predicted generation?", 
-														FIPANames.InteractionProtocol.FIPA_REQUEST, 
-														ACLMessage.REQUEST);
+					ACLMessage aaGMsg = createMessage(nAAGResponders, aaGAgents, "Predicted generation?",
+							FIPANames.InteractionProtocol.FIPA_REQUEST, ACLMessage.REQUEST);
 
 					raAgents = getService("RA");
 					nRAResponders = raAgents.length;
@@ -130,6 +134,7 @@ public class HomeAgent extends Agent
 							{
 								System.out
 										.println(getLocalName() + ": " + "Received notifications from every responder");
+								System.out.println("Predicted Demand is:" + predictedDemand);
 							}
 						}
 					});
@@ -183,217 +188,18 @@ public class HomeAgent extends Agent
 							{
 								System.out
 										.println(getLocalName() + ": " + "Received notifications from every responder");
+								System.out.println("Predicted Generation is:" + predictedGeneration);
 							}
 						}
 					});
-					
+
 					seq.addSubBehaviour(par);
-
-					String msgContent;
-					if(predictedDemand > predictedGeneration)
-					{
-						msgContent = "buy," + Double.toString(predictedDemand-predictedGeneration);
-						ACLMessage raMsg = createMessage(	nRAResponders, 
-								raAgents, 
-								msgContent, 
-								FIPANames.InteractionProtocol.FIPA_CONTRACT_NET, 
-								ACLMessage.CFP);
-						seq.addSubBehaviour(new ContractNetInitiator(myAgent, raMsg)
-						{
-
-							protected void handlePropose(ACLMessage propose, Vector v)
-							{
-								System.out.println(
-										"Agent " + propose.getSender().getName() + " proposed " + propose.getContent());
-							}
-
-							protected void handleRefuse(ACLMessage refuse)
-							{
-								System.out.println("Agent " + refuse.getSender().getName() + " refused.");
-								setBuyingPrice = originalBuyingPrice;
-							}
-
-							protected void handleFailure(ACLMessage failure)
-							{
-								if (failure.getSender().equals(myAgent.getAMS()))
-								{
-									// FAILURE notification from the JADE runtime: the receiver
-									// does not exist
-									System.out.println("Responder does not exist");
-								} else
-								{
-									setBuyingPrice = originalBuyingPrice;
-									
-									System.out.println("Negotiation with Agent " + failure.getSender().getName() + " ended.");
-								}
-								// Immediate failure --> we will not receive a response from this agent
-								nRAResponders--;
-							}
-
-							protected void handleAllResponses(Vector responses, Vector acceptances)
-							{
-								setBuyingPrice*=1.05;
-								if (responses.size() < nRAResponders)
-								{
-									// Some responder didn't reply within the specified timeout
-									System.out.println(
-											"Timeout expired: missing " + (nRAResponders - responses.size()) + " responses");
-								}
-								// Evaluate proposals.
-								double bestProposal = 9999999;
-								AID bestProposer = null;
-								ACLMessage accept = null;
-								Enumeration e = responses.elements();
-								while (e.hasMoreElements())
-								{
-									ACLMessage msg = (ACLMessage) e.nextElement();
-									if (msg.getPerformative() == ACLMessage.PROPOSE)
-									{
-										ACLMessage reply = msg.createReply();
-										reply.setPerformative(ACLMessage.REJECT_PROPOSAL);
-										double proposal = Double.parseDouble(msg.getContent());
-										if (proposal <= setBuyingPrice && proposal < bestProposal)
-										{
-											bestProposal = proposal;
-											bestProposer = msg.getSender();
-											accept = reply;
-										}
-										else
-										{
-											if(setBuyingPrice > acceptedBuyPriceThreshold)
-											{
-												reply.setPerformative(ACLMessage.FAILURE);
-											}
-											else
-											{
-												reply.setContent(Double.toString(setBuyingPrice));
-											}
-											
-										}
-										acceptances.addElement(reply);
-									}
-								}
-								// Accept the proposal of the best proposer
-								if (accept != null)
-								{
-									System.out.println("Accepting proposal " + bestProposal + " from responder "
-											+ bestProposer.getName());
-									accept.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
-								}
-							}
-
-							protected void handleInform(ACLMessage inform)
-							{
-								System.out.println("Agent " + inform.getSender().getName()
-										+ " successfully performed the requested action");
-								setBuyingPrice = originalBuyingPrice;
-							}
-						});
-					}
-					else 
-					{
-						msgContent = "sell," + Double.toString(predictedGeneration-predictedDemand);
-						ACLMessage raMsg = createMessage(	nRAResponders, 
-								raAgents, 
-								msgContent, 
-								FIPANames.InteractionProtocol.FIPA_CONTRACT_NET, 
-								ACLMessage.CFP);
-						seq.addSubBehaviour(new ContractNetInitiator(myAgent, raMsg)
-						{
-
-							protected void handlePropose(ACLMessage propose, Vector v)
-							{
-								System.out.println(
-										"Agent " + propose.getSender().getName() + " proposed " + propose.getContent());
-							}
-
-							protected void handleRefuse(ACLMessage refuse)
-							{
-								System.out.println("Agent " + refuse.getSender().getName() + " refused.");
-								setSellingPrice = originalSellingPrice;
-							}
-
-							protected void handleFailure(ACLMessage failure)
-							{
-								if (failure.getSender().equals(myAgent.getAMS()))
-								{
-									// FAILURE notification from the JADE runtime: the receiver
-									// does not exist
-									System.out.println("Responder does not exist");
-								} else
-								{
-									setSellingPrice = originalSellingPrice;
-									System.out.println("Negotiation with Agent " + failure.getSender().getName() + " ended.");
-								}
-								// Immediate failure --> we will not receive a response from this agent
-								nRAResponders--;
-							}
-
-							protected void handleAllResponses(Vector responses, Vector acceptances)
-							{
-								setSellingPrice*=0.95;
-								if (responses.size() < nRAResponders)
-								{
-									// Some responder didn't reply within the specified timeout
-									System.out.println(
-											"Timeout expired: missing " + (nRAResponders - responses.size()) + " responses");
-								}
-								// Evaluate proposals.
-								double bestProposal = 0;
-								AID bestProposer = null;
-								ACLMessage accept = null;
-								Enumeration e = responses.elements();
-								while (e.hasMoreElements())
-								{
-									ACLMessage msg = (ACLMessage) e.nextElement();
-									if (msg.getPerformative() == ACLMessage.PROPOSE)
-									{
-										ACLMessage reply = msg.createReply();
-										reply.setPerformative(ACLMessage.REJECT_PROPOSAL);
-										double proposal = Double.parseDouble(msg.getContent());
-										if (proposal >= setSellingPrice && proposal > bestProposal)
-										{
-											bestProposal = proposal;
-											bestProposer = msg.getSender();
-											accept = reply;
-										}
-										else
-										{
-											if(setSellingPrice < acceptedSellPriceThreshold)
-											{
-												reply.setPerformative(ACLMessage.FAILURE);
-											}
-											else
-											{
-												reply.setContent(Double.toString(setBuyingPrice));
-											}
-											
-										}
-										acceptances.addElement(reply);
-									}
-								}
-								// Accept the proposal of the best proposer
-								if (accept != null)
-								{
-									System.out.println("Accepting proposal " + bestProposal + " from responder "
-											+ bestProposer.getName());
-									accept.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
-								}
-							}
-
-							protected void handleInform(ACLMessage inform)
-							{
-								System.out.println("Agent " + inform.getSender().getName()
-										+ " successfully performed the requested action");
-								setSellingPrice = originalSellingPrice;
-							}
-						});
-					}
+					seq.addSubBehaviour(negotiator);
 				}
 			});
 		}
 	}
-	
+
 	private ACLMessage createMessage(int receivers, AID[] agents, String content, String protocol, int type)
 	{
 		ACLMessage result = new ACLMessage(type);
@@ -406,7 +212,7 @@ public class HomeAgent extends Agent
 		result.setContent(content);
 		return result;
 	}
-	
+
 	private AID[] getService(String service)
 	{
 		DFAgentDescription dfd = new DFAgentDescription();
@@ -422,11 +228,248 @@ public class HomeAgent extends Agent
 				agents[i] = result[i].getName();
 			}
 			return agents;
-			
+
 		} catch (FIPAException fe)
 		{
 			fe.printStackTrace();
 		}
 		return null;
+	}
+
+	OneShotBehaviour negotiator = new OneShotBehaviour()
+	{
+
+		@Override
+		public void action()
+		{
+			String msgContent;
+			if (predictedDemand > predictedGeneration)
+			{
+				msgContent = "buy," + Double.toString(predictedDemand - predictedGeneration);
+				ACLMessage raMsg = createMessage(nRAResponders, raAgents, msgContent,
+						FIPANames.InteractionProtocol.FIPA_CONTRACT_NET, ACLMessage.CFP);
+				seq.addSubBehaviour(new Iterated(myAgent, raMsg));
+			} else
+			{
+				msgContent = "sell," + Double.toString(predictedGeneration - predictedDemand);
+				ACLMessage raMsg = createMessage(nRAResponders, raAgents, msgContent,
+						FIPANames.InteractionProtocol.FIPA_CONTRACT_NET, ACLMessage.CFP);
+				seq.addSubBehaviour(new IteratedS(myAgent, raMsg));
+			}
+
+		}
+
+	};
+
+	private class Iterated extends ContractNetInitiator
+	{
+
+		public Iterated(Agent a, ACLMessage cfp)
+		{
+			super(a, cfp);
+		}
+
+		protected void handlePropose(ACLMessage propose, Vector v)
+		{
+			System.out.println("Agent " + propose.getSender().getName() + " proposed " + propose.getContent());
+		}
+
+		protected void handleRefuse(ACLMessage refuse)
+		{
+			System.out.println("Agent " + refuse.getSender().getName() + " refused.");
+		}
+
+		protected void handleFailure(ACLMessage failure)
+		{
+			if (failure.getSender().equals(myAgent.getAMS()))
+			{
+				// FAILURE notification from the JADE runtime: the receiver
+				// does not exist
+				System.out.println("Responder does not exist");
+			} else
+			{
+
+				System.out.println("Negotiation with Agent " + failure.getSender().getName() + " ended.");
+			}
+			// Immediate failure --> we will not receive a response from this agent
+			nRAResponders--;
+		}
+
+		protected void handleAllResponses(Vector responses, Vector acceptances)
+		{
+
+			if (setBuyingPrice <= acceptedBuyPriceThreshold && !trade)
+			{
+				reset();
+				setBuyingPrice *= 1.05;
+				if (responses.size() < nRAResponders)
+				{
+					// Some responder didn't reply within the specified timeout
+					System.out.println("Timeout expired: missing " + (nRAResponders - responses.size()) + " responses");
+				}
+				// Evaluate proposals.
+				double bestProposal = 9999999;
+				AID bestProposer = null;
+				ACLMessage accept = null;
+				Enumeration e = responses.elements();
+				while (e.hasMoreElements())
+				{
+					ACLMessage msg = (ACLMessage) e.nextElement();
+					if (msg.getPerformative() == ACLMessage.PROPOSE)
+					{
+						ACLMessage reply = msg.createReply();
+						reply.setPerformative(ACLMessage.REJECT_PROPOSAL);
+						double proposal = Double.parseDouble(msg.getContent());
+						if (proposal <= setBuyingPrice && proposal < bestProposal)
+						{
+							bestProposal = proposal;
+							bestProposer = msg.getSender();
+							accept = reply;
+							trade = true;
+						} 
+						if(accept==null)
+						{
+							reply.setPerformative(ACLMessage.CFP);
+							reply.setContent("counter-buy," + (Double.toString(setBuyingPrice)));
+						}
+						acceptances.addElement(reply);
+					}
+				}
+				// Accept the proposal of the best proposer
+				if (accept != null)
+				{
+					System.out.println(
+							"Accepting proposal " + bestProposal + " from responder " + bestProposer.getName());
+					accept.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
+				}
+				getDataStore().put(ALL_CFPS_KEY, acceptances);
+			}
+			else
+			{
+				Enumeration elements = responses.elements();
+				while (elements.hasMoreElements())
+				{
+					ACLMessage msg = (ACLMessage) elements.nextElement();
+					if (msg.getPerformative() == ACLMessage.PROPOSE)
+					{
+						ACLMessage reply = msg.createReply();
+						reply.setPerformative(ACLMessage.REJECT_PROPOSAL);
+						acceptances.addElement(reply);
+					}
+				}
+			}
+		}
+
+		protected void handleInform(ACLMessage inform)
+		{
+			System.out
+					.println("Agent " + inform.getSender().getName() + " successfully performed the requested action");
+		}
+	}
+	
+	private class IteratedS extends ContractNetInitiator
+	{
+
+		public IteratedS(Agent a, ACLMessage cfp)
+		{
+			super(a, cfp);
+		}
+
+		protected void handlePropose(ACLMessage propose, Vector v)
+		{
+			System.out.println("Agent " + propose.getSender().getName() + " proposed " + propose.getContent());
+		}
+
+		protected void handleRefuse(ACLMessage refuse)
+		{
+			System.out.println("Agent " + refuse.getSender().getName() + " refused.");
+		}
+
+		protected void handleFailure(ACLMessage failure)
+		{
+			if (failure.getSender().equals(myAgent.getAMS()))
+			{
+				// FAILURE notification from the JADE runtime: the receiver
+				// does not exist
+				System.out.println("Responder does not exist");
+			} else
+			{
+
+				System.out.println("Negotiation with Agent " + failure.getSender().getName() + " ended.");
+			}
+			// Immediate failure --> we will not receive a response from this agent
+			nRAResponders--;
+		}
+
+		protected void handleAllResponses(Vector responses, Vector acceptances)
+		{
+
+			if (setSellingPrice >= acceptedSellPriceThreshold && !trade)
+			{
+				reset();
+				setSellingPrice *= 0.95;
+				if (responses.size() < nRAResponders)
+				{
+					// Some responder didn't reply within the specified timeout
+					System.out.println("Timeout expired: missing " + (nRAResponders - responses.size()) + " responses");
+				}
+				// Evaluate proposals.
+				double bestProposal = 0;
+				AID bestProposer = null;
+				ACLMessage accept = null;
+				Enumeration e = responses.elements();
+				while (e.hasMoreElements())
+				{
+					ACLMessage msg = (ACLMessage) e.nextElement();
+					if (msg.getPerformative() == ACLMessage.PROPOSE)
+					{
+						ACLMessage reply = msg.createReply();
+						reply.setPerformative(ACLMessage.REJECT_PROPOSAL);
+						double proposal = Double.parseDouble(msg.getContent());
+						if (proposal >= setSellingPrice && proposal > bestProposal)
+						{
+							bestProposal = proposal;
+							bestProposer = msg.getSender();
+							accept = reply;
+							trade = true;
+						} 
+						if(accept==null)
+						{
+							reply.setPerformative(ACLMessage.CFP);
+							reply.setContent("counter-sell," + (Double.toString(setSellingPrice)));
+						}
+						acceptances.addElement(reply);
+					}
+				}
+				// Accept the proposal of the best proposer
+				if (accept != null)
+				{
+					System.out.println(
+							"Accepting proposal " + bestProposal + " from responder " + bestProposer.getName());
+					accept.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
+				}
+				getDataStore().put(ALL_CFPS_KEY, acceptances);
+			}
+			else
+			{
+				Enumeration elements = responses.elements();
+				while (elements.hasMoreElements())
+				{
+					ACLMessage msg = (ACLMessage) elements.nextElement();
+					if (msg.getPerformative() == ACLMessage.PROPOSE)
+					{
+						ACLMessage reply = msg.createReply();
+						reply.setPerformative(ACLMessage.REJECT_PROPOSAL);
+						acceptances.addElement(reply);
+					}
+				}
+			}
+		}
+
+		protected void handleInform(ACLMessage inform)
+		{
+			System.out
+					.println("Agent " + inform.getSender().getName() + " successfully performed the requested action");
+		}
 	}
 }

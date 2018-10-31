@@ -1,10 +1,13 @@
 package set;
 
 import jade.core.Agent;
+import jade.core.behaviours.Behaviour;
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.proto.ContractNetResponder;
+import jade.proto.SSIteratedContractNetResponder;
+import jade.proto.SSResponderDispatcher;
 import jade.proto.ContractNetInitiator;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
@@ -23,7 +26,7 @@ public class RetailerAgent extends Agent
 	private double acceptedBuyPriceThreshold;
 	private double acceptedSellPriceThreshold;
 	private String act;
-	
+
 	protected void setup()
 	{
 		Object args[] = getArguments();
@@ -37,87 +40,9 @@ public class RetailerAgent extends Agent
 				MessageTemplate.MatchProtocol(FIPANames.InteractionProtocol.FIPA_CONTRACT_NET),
 				MessageTemplate.MatchPerformative(ACLMessage.CFP));
 
-		addBehaviour(new ContractNetResponder(this, template)
-		{
-			protected ACLMessage prepareResponse(ACLMessage cfp) throws NotUnderstoodException, RefuseException
-			{
-				System.out.println("Agent " + getLocalName() + ": CFP received from " + cfp.getSender().getName()
-						+ ". Action is " + cfp.getContent());
-				String vals[] = cfp.getContent().split(",");
-				if (vals[0] == "buy")
-				{
-					try
-					{
-						currentOffer = price.getPrice(Double.parseDouble(vals[1]));
-					} catch (NumberFormatException e)
-					{
-						e.printStackTrace();
-					} catch (Exception e)
-					{
-						e.printStackTrace();
-					}
-					act = "selling";
-					// We provide a proposal
-					System.out.println("Agent " + getLocalName() + ": Proposing " + Double.toString(currentOffer));
-					ACLMessage propose = cfp.createReply();
-					propose.setPerformative(ACLMessage.PROPOSE);
-					propose.setContent(String.valueOf(currentOffer));
-					return propose;
-				} else
-				{
-					currentOffer = setBuyingPrice;
-					act = "buying";
-					System.out.println("Agent " + getLocalName() + ": Proposing " + Double.toString(currentOffer));
-					ACLMessage propose = cfp.createReply();
-					propose.setPerformative(ACLMessage.PROPOSE);
-					propose.setContent(String.valueOf(currentOffer));
-					return propose;
-				}
-			}
-
-			protected ACLMessage prepareResultNotification(ACLMessage cfp, ACLMessage propose, ACLMessage accept)
-					throws FailureException
-			{
-				System.out.println("Agent " + getLocalName() + ": Proposal accepted");
-				if(act == "selling")
-				{
-					System.out.println("Agent " + getLocalName() + ": Action successfully performed");
-					ACLMessage inform = accept.createReply();
-					inform.setPerformative(ACLMessage.INFORM);
-					return inform;
-				}
-				else
-				{
-					System.out.println("Agent " + getLocalName() + ": Action execution failed");
-					throw new FailureException("unexpected-error");
-				}
-			}
-
-			protected ACLMessage handleRejectProposal(ACLMessage reject)
-			{
-				System.out.println("Agent " + getLocalName() + ": Proposal rejected");
-				ACLMessage propose = reject.createReply();
-				propose.setPerformative(ACLMessage.PROPOSE);
-				String content;
-				if(act == "selling")
-				{
-					currentOffer*= 0.95;
-					if(currentOffer >= acceptedSellPriceThreshold)
-					propose.setContent(Double.toString(currentOffer));
-					else propose.setPerformative(ACLMessage.FAILURE);
-				}
-				else
-				{
-					currentOffer*= 1.05;
-					if(currentOffer <= acceptedBuyPriceThreshold)
-					propose.setContent(Double.toString(currentOffer));
-					else propose.setPerformative(ACLMessage.FAILURE);
-				}
-				return propose;
-			}
-		});
+		addBehaviour(new IteratedR(this, template));
 	}
-	
+
 	private void register(String name, String type)
 	{
 		ServiceDescription sd = new ServiceDescription();
@@ -139,11 +64,97 @@ public class RetailerAgent extends Agent
 	{
 		try
 		{
-			
+
 			DFService.deregister(this);
 		} catch (Exception e)
 		{
 			e.printStackTrace();
+		}
+	}
+
+	private class IteratedR extends SSResponderDispatcher
+	{
+
+		private IteratedR(Agent agent, MessageTemplate template)
+		{
+			super(agent, template);
+		}
+
+		protected Behaviour createResponder(ACLMessage message)
+		{
+			System.out.println("createResponder for " + myAgent.getLocalName());
+			return new SSIteratedContractNetResponder(myAgent, message)
+			{
+				protected ACLMessage handleCfp(ACLMessage cfp)
+						throws RefuseException, FailureException, NotUnderstoodException
+				{
+					System.out.println("Agent " + cfp.getSender().getName() + " counter-proposed " + cfp.getContent().split(",")[1]); // always gets the original
+																						// CFP!!!
+					String vals[] = cfp.getContent().split(",");
+					if (vals[0].equals("buy") || vals[0].equals("counter-buy"))
+					{
+						try
+						{
+							if(currentOffer == 0)currentOffer = price.getPrice(Double.parseDouble(vals[1]));
+						} catch (NumberFormatException e)
+						{
+							e.printStackTrace();
+						} catch (Exception e)
+						{
+							e.printStackTrace();
+						}
+						act = "selling";
+					} else
+					{
+						currentOffer = setBuyingPrice;
+						act = "buying";
+					}
+					ACLMessage proposal = cfp.createReply();
+					proposal.setPerformative(ACLMessage.PROPOSE);
+					String content;
+					if (act == "selling")
+					{
+						if (currentOffer >= acceptedSellPriceThreshold)
+						{
+							proposal.setContent(Double.toString(currentOffer));
+						}
+						else
+						{
+							proposal.setPerformative(ACLMessage.FAILURE);
+						}
+						currentOffer *= 0.95;
+					} 
+					else
+					{
+						if (currentOffer <= acceptedBuyPriceThreshold)
+						{
+							proposal.setContent(Double.toString(currentOffer));
+						}
+						else
+						{
+							proposal.setPerformative(ACLMessage.FAILURE);
+						}
+						currentOffer *= 1.05;
+					}
+
+					return proposal;
+				}
+
+				protected ACLMessage handleAcceptProposal(ACLMessage cfp, ACLMessage propose, ACLMessage accept)
+						throws FailureException
+				{
+					currentOffer = 0;
+					System.out.println("Agent " + getLocalName() + ": Action successfully performed");
+					ACLMessage inform = accept.createReply();
+					inform.setPerformative(ACLMessage.INFORM);
+					return inform;
+				}
+
+				protected void handleRejectProposal(ACLMessage cfp, ACLMessage propose, ACLMessage reject)
+				{
+					
+				}
+			};
 		}
 	}
 }

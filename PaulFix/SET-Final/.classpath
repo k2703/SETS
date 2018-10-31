@@ -6,6 +6,7 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="lib" path="C:/Users/Paul Clay/Google Drive/Uni/2018Sem2/IS/eclipse-workspace/tutes/lib/jade.jar"/>
+	<classpathentry kind="lib" path="C:/Program Files/Java/JADE/jade/lib/jade.jar"/>
+	<classpathentry kind="lib" path="C:/Program Files/Java/JADE/jade/lib/jadeExamples.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
