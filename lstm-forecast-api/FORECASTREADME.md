@@ -4,13 +4,13 @@
 
 ```bash
 
-# deploy model 
+# Deploys pretrained LSTM models for a passed list of appliances  
 curl -H "Content-Type: application/json" -X POST -d '{"appliances":["FGE","HTE","TVE"]}' http://115.146.92.150:5000/lstmforecast/deploy-model
 
-# pullback model 
+# Pulls back all currently deployed LSTM models 
 curl -H "Content-Type: application/json" -X POST -d '' http://115.146.92.150:5000/lstmforecast/pullback-model
 
-# append current observation and retrieve prediction
+# Conveys current observation to model and model returns corresponding prediction
 curl -H "Content-Type: application/json" -X POST -d '{"observation":"59.51666667"}' http://115.146.92.150:5000/lstmforecast/FGE/predict
 ```
 
