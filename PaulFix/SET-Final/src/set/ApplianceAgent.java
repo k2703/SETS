@@ -1,6 +1,8 @@
 package set;
 
 import jade.core.Agent;
+import jade.core.behaviours.Behaviour;
+import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.ParallelBehaviour;
 import jade.core.behaviours.SequentialBehaviour;
 import jade.lang.acl.MessageTemplate;
@@ -39,8 +41,6 @@ public class ApplianceAgent extends Agent
 		name = args[0].toString();
 		forecastProviders = getService("forecast");
 		forecastResponders = forecastProviders.length;
-/*		seq = new SequentialBehaviour();
-		addBehaviour(seq);*/
 		String msg = "predict," + name;
 		ACLMessage getPred = createMessage(forecastResponders, forecastProviders, msg,
 				FIPANames.InteractionProtocol.FIPA_REQUEST, ACLMessage.REQUEST);
@@ -117,8 +117,8 @@ public class ApplianceAgent extends Agent
 				return inform;
 			}
 		});
-		b.registerHandleRequest(a);
-		addBehaviour(b);
+		ECyclic x = new ECyclic(b,a);
+		addBehaviour(x);
 	}
 
 	private void register(String name, String type)
@@ -183,5 +183,25 @@ public class ApplianceAgent extends Agent
 			fe.printStackTrace();
 		}
 		return null;
+	}
+	
+	private class ECyclic extends CyclicBehaviour
+	{
+		AchieveREResponder a;
+		AchieveREInitiator b;
+		SequentialBehaviour seq = new SequentialBehaviour();
+		public ECyclic(AchieveREResponder a, AchieveREInitiator b)
+		{
+			this.a = a;
+			this.b = b;
+		}
+		@Override
+		public void action()
+		{
+			seq.addSubBehaviour(b);
+			seq.addSubBehaviour(a);
+			addBehaviour(seq);
+		}
+		
 	}
 }
