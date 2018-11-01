@@ -26,6 +26,7 @@ public class RetailerAgent extends Agent
 	private double acceptedBuyPriceThreshold;
 	private double acceptedSellPriceThreshold;
 	private String act;
+	
 
 	protected void setup()
 	{

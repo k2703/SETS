@@ -15,9 +15,13 @@ import jade.domain.FIPAException;
 import jade.domain.FIPANames;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
+
+import java.awt.EventQueue;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Vector;
+
+import org.jfree.ui.RefineryUtilities;
 
 @SuppressWarnings("serial")
 public class HomeAgent extends Agent
@@ -42,10 +46,29 @@ public class HomeAgent extends Agent
 	private double originalBuyingPrice;
 	private double originalSellingPrice;
 	private String tou;
+	transient protected WOEPlot myGui;
 
 	protected void setup()
 	{
 		Object[] args = getArguments();
+		myGui = new WOEPlot("GUI");
+		myGui.pack();
+		RefineryUtilities.centerFrameOnScreen(myGui);
+		myGui.setVisible(true);
+		myGui.start();
+		/*Runnable gui = new Runnable() {
+			@Override
+			public void run() {
+				WOEPlot demo = new WOEPlot("Checking");
+				demo.pack();
+				RefineryUtilities.centerFrameOnScreen(demo);
+				System.out.println(predictedDemand);
+				if(predictedDemand != 0 && actualDemand != 0) demo.dataUpdate(predictedDemand, 2);
+				demo.setVisible(true);
+				demo.start();
+			}
+		};*/
+		//EventQueue.invokeLater(gui);
 		if (args != null && args.length > 0)
 		{
 			acceptedBuyPriceThreshold = Double.parseDouble(args[0].toString());
@@ -68,6 +91,8 @@ public class HomeAgent extends Agent
 					// register the services
 					predictedDemand = 0;
 					predictedGeneration = 0;
+					actualDemand = 0;
+					actualGeneration = 0;
 					trade = false;
 					seq = new SequentialBehaviour();
 
@@ -138,6 +163,7 @@ public class HomeAgent extends Agent
 								System.out
 										.println(getLocalName() + ": " + "Received notifications from every responder");
 								System.out.println("Predicted Demand is:" + predictedDemand);
+								myGui.dataUpdate(actualDemand, predictedDemand);
 							}
 						}
 					});

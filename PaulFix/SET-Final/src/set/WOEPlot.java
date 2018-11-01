@@ -10,6 +10,7 @@ import java.util.Random;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
 import javax.swing.Timer;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -36,14 +37,16 @@ public class WOEPlot extends ApplicationFrame {
 	private float x, y;
 	private static final Random random = new Random();
 	private Timer timer;
+	private int counter = 0;
+	private JTabbedPane PLot1;
+	private final DynamicTimeSeriesCollection dataset;
 
 	CSVReader reader;
 	String[] readNextLine;
 
 	public WOEPlot(final String title) {
 		super(title);
-
-		final DynamicTimeSeriesCollection dataset = new DynamicTimeSeriesCollection(2, COUNT, new Hour());
+		dataset = new DynamicTimeSeriesCollection(2, COUNT, new Hour());
 
 		dataset.setTimeBase(new Hour());
 		dataset.addSeries(plotData(), 0, "1");
@@ -95,18 +98,24 @@ public class WOEPlot extends ApplicationFrame {
 				float newpt[] = new float[2];
 				newpt[1] = y;
 				newpt[0] = x;
-				dataset.advanceTime();
 				dataset.appendData(newpt);
+				System.out.println("TRIAL");
 			}
 		});
 
 		chartPanel.setPreferredSize(new Dimension(800, 600));
-		this.add(chartPanel);
+		JPanel x = new JPanel();
+		x.add(chartPanel);
+		PLot1 = new JTabbedPane();
+		PLot1.addTab("Plot 1", x);
+		this.add(PLot1);
 	}
 
 	public void dataUpdate(double a, double b) {
 		x = (float)a;
 		y = (float)b;
+		dataset.advanceTime();
+	//	System.out.println(x + " " + y);
 	}
 
 	private float[] plotData() {
