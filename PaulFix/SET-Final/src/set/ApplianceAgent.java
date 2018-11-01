@@ -5,6 +5,8 @@ import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.ParallelBehaviour;
 import jade.core.behaviours.SequentialBehaviour;
+import jade.core.behaviours.TickerBehaviour;
+import jade.core.behaviours.WakerBehaviour;
 import jade.lang.acl.MessageTemplate;
 
 import java.util.Date;
@@ -29,9 +31,11 @@ public class ApplianceAgent extends Agent
 	private double actual;
 	private double predicted;
 	private String name;
-	private AID[] forecastProviders;
+	private postURL a;
+/*	private AID[] forecastProviders;
 	private int forecastResponders;
 	private SequentialBehaviour seq;
+	private Boolean sa = false;*/
 
 	@SuppressWarnings("serial")
 	protected void setup()
@@ -39,65 +43,20 @@ public class ApplianceAgent extends Agent
 		Object args[] = getArguments();
 		register(args[0].toString(), args[1].toString());
 		name = args[0].toString();
-		forecastProviders = getService("forecast");
-		forecastResponders = forecastProviders.length;
-		String msg = "predict," + name;
-		ACLMessage getPred = createMessage(forecastResponders, forecastProviders, msg,
+		a = new postURL("test.csv");
+		/*forecastProviders = getService("forecast");
+		forecastResponders = forecastProviders.length;*/
+		/*String msg = "predict," + name;*/
+		/*ACLMessage getPred = createMessage(forecastResponders, forecastProviders, msg,
 				FIPANames.InteractionProtocol.FIPA_REQUEST, ACLMessage.REQUEST);
-		AchieveREInitiator a = new AchieveREInitiator(this, getPred)
-		{
-			protected void handleAgree(ACLMessage agree)
-			{
-				System.out.println(getLocalName() + ": " + agree.getSender().getName() + " has agreed to the request");
-			}
-
-			protected void handleInform(ACLMessage inform)
-			{
-				System.out.println(getLocalName() + ": " + inform.getSender().getName()
-						+ " successfully performed the requested action");
-				System.out.println(getLocalName() + ": " + inform.getSender().getName()
-						+ "'s predicted energy demand is " + inform.getContent());
-				String vals[] = inform.getContent().split(",");
-				actual += Double.parseDouble(vals[0]);
-				predicted += Double.parseDouble(vals[1]);
-			}
-
-			protected void handleRefuse(ACLMessage refuse)
-			{
-				System.out.println(getLocalName() + ": " + refuse.getSender().getName()
-						+ " refused to perform the requested action.");
-				forecastResponders--;
-			}
-
-			protected void handleFailure(ACLMessage failure)
-			{
-				if (failure.getSender().equals(myAgent.getAMS()))
-				{
-					System.out.println(getLocalName() + ": " + "Responder does not exist");
-				} else
-				{
-					System.out.println(getLocalName() + ": " + failure.getSender().getName()
-							+ " failed to perform the requested action.");
-				}
-			}
-
-			protected void handleAllResultNotifications(Vector notifications)
-			{
-				if (notifications.size() < forecastResponders)
-				{
-					System.out.println(getLocalName() + ": " + "Timeout expired: missing "
-							+ (forecastResponders - notifications.size()) + " responses");
-				} else
-				{
-					System.out.println(getLocalName() + ": " + "Received notifications from every responder");
-				}
-			}
-		};
+		// AchieveREInitiator a = new AchieveREInitiator(this, getPred);
+		SequentialBehaviour seq = new SequentialBehaviour();*/
 		System.out.println("Agent " + getLocalName() + " waiting for requests...");
 		MessageTemplate template = MessageTemplate.and(
 				MessageTemplate.MatchProtocol(FIPANames.InteractionProtocol.FIPA_REQUEST),
 				MessageTemplate.MatchPerformative(ACLMessage.REQUEST));
-		AchieveREResponder b =(new AchieveREResponder(this, template)
+		// EInitiator a = new EInitiator(this, getPred);
+		AchieveREResponder b = (new AchieveREResponder(this, template)
 		{
 			protected ACLMessage prepareResponse(ACLMessage request) throws NotUnderstoodException, RefuseException
 			{
@@ -109,16 +68,40 @@ public class ApplianceAgent extends Agent
 			protected ACLMessage prepareResultNotification(ACLMessage request, ACLMessage response)
 					throws FailureException
 			{
-				String content = Double.toString(actual) + "," + Double.toString(predicted);
-				System.out.println("Agent " + getLocalName() + ": Action successfully performed");
-				ACLMessage inform = request.createReply();
-				inform.setPerformative(ACLMessage.INFORM);
-				inform.setContent(content);
-				return inform;
+				double data[] = a.UseService(name);
+				if (data.length != 0)
+				{
+					actual = data[0];
+					predicted = data[1];
+					String content = Double.toString(data[0]) + "," + Double.toString(data[1]);
+					System.out.println("Agent " + getLocalName() + ": Action successfully performed");
+					ACLMessage inform = request.createReply();
+					inform.setPerformative(ACLMessage.INFORM);
+					inform.setContent(content);
+					return inform;
+				}
+				else
+				{
+					System.out.println("Agent " + getLocalName() + ": Action failed");
+					throw new FailureException("unexpected-error");
+				}
 			}
 		});
-		ECyclic x = new ECyclic(b,a);
-		addBehaviour(x);
+		addBehaviour(b);
+/*		seq.addSubBehaviour(a);
+		seq.addSubBehaviour(b);
+		CyclicBehaviour z = new CyclicBehaviour()
+		{
+
+			@Override
+			public void action()
+			{
+				addBehaviour(seq);
+
+			}
+
+		};
+		addBehaviour(z);*/
 	}
 
 	private void register(String name, String type)
@@ -149,7 +132,7 @@ public class ApplianceAgent extends Agent
 		}
 	}
 
-	private ACLMessage createMessage(int receivers, AID[] agents, String content, String protocol, int type)
+	/*private ACLMessage createMessage(int receivers, AID[] agents, String content, String protocol, int type)
 	{
 		ACLMessage result = new ACLMessage(type);
 		for (int i = 0; i < receivers; ++i)
@@ -184,24 +167,59 @@ public class ApplianceAgent extends Agent
 		}
 		return null;
 	}
-	
-	private class ECyclic extends CyclicBehaviour
+
+	private class EInitiator extends AchieveREInitiator
 	{
-		AchieveREResponder a;
-		AchieveREInitiator b;
-		SequentialBehaviour seq = new SequentialBehaviour();
-		public ECyclic(AchieveREResponder a, AchieveREInitiator b)
+		public EInitiator(Agent a, ACLMessage msg)
 		{
-			this.a = a;
-			this.b = b;
+			super(a, msg);
 		}
-		@Override
-		public void action()
+
+		protected void handleAgree(ACLMessage agree)
 		{
-			seq.addSubBehaviour(b);
-			seq.addSubBehaviour(a);
-			addBehaviour(seq);
+			System.out.println(getLocalName() + ": " + agree.getSender().getName() + " has agreed to the request");
 		}
-		
-	}
+
+		protected void handleInform(ACLMessage inform)
+		{
+			System.out.println(getLocalName() + ": " + inform.getSender().getName()
+					+ " successfully performed the requested action");
+			System.out.println(getLocalName() + ": " + inform.getSender().getName() + "'s predicted energy demand is "
+					+ inform.getContent());
+			String vals[] = inform.getContent().split(",");
+			actual += Double.parseDouble(vals[0]);
+			predicted += Double.parseDouble(vals[1]);
+		}
+
+		protected void handleRefuse(ACLMessage refuse)
+		{
+			System.out.println(
+					getLocalName() + ": " + refuse.getSender().getName() + " refused to perform the requested action.");
+			forecastResponders--;
+		}
+
+		protected void handleFailure(ACLMessage failure)
+		{
+			if (failure.getSender().equals(myAgent.getAMS()))
+			{
+				System.out.println(getLocalName() + ": " + "Responder does not exist");
+			} else
+			{
+				System.out.println(getLocalName() + ": " + failure.getSender().getName()
+						+ " failed to perform the requested action.");
+			}
+		}
+
+		protected void handleAllResultNotifications(Vector notifications)
+		{
+			if (notifications.size() < forecastResponders)
+			{
+				System.out.println(getLocalName() + ": " + "Timeout expired: missing "
+						+ (forecastResponders - notifications.size()) + " responses");
+			} else
+			{
+				System.out.println(getLocalName() + ": " + "Received notifications from every responder");
+			}
+		}
+	}*/
 }

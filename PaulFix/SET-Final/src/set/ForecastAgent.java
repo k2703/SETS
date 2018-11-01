@@ -24,7 +24,7 @@ public class ForecastAgent extends Agent
 		MessageTemplate template = MessageTemplate.and(
 				MessageTemplate.MatchProtocol(FIPANames.InteractionProtocol.FIPA_REQUEST),
 				MessageTemplate.MatchPerformative(ACLMessage.REQUEST));
-
+		a = new postURL("test.csv");
 		this.addBehaviour(new AchieveREResponder(this, template)
 		{
 			protected ACLMessage prepareResponse(ACLMessage request) throws NotUnderstoodException, RefuseException
@@ -32,7 +32,6 @@ public class ForecastAgent extends Agent
 				System.out.println("Agent " + getLocalName() + ": REQUEST received from "
 						+ request.getSender().getName() + ". Action is " + request.getContent());
 				name = request.getContent().split(",")[1];
-				a = new postURL("test.csv");
 				return null;
 			}
 
