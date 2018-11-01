@@ -88,8 +88,10 @@ public class RetailerAgent extends Agent
 				protected ACLMessage handleCfp(ACLMessage cfp)
 						throws RefuseException, FailureException, NotUnderstoodException
 				{
+					if(!(cfp.getContent().split(",")[0].equals("buy") || cfp.getContent().split(",")[0].equals("sell")))
 					System.out.println("Agent " + cfp.getSender().getName() + " counter-proposed " + cfp.getContent().split(",")[1]); // always gets the original
-																						// CFP!!!
+					else
+						System.out.println("Agent " + cfp.getSender().getName() + " proposed to " + cfp.getContent()); // always gets the original
 					String vals[] = cfp.getContent().split(",");
 					if (vals[0].equals("buy") || vals[0].equals("counter-buy"))
 					{

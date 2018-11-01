@@ -39,8 +39,8 @@ public class ApplianceAgent extends Agent
 		name = args[0].toString();
 		forecastProviders = getService("forecast");
 		forecastResponders = forecastProviders.length;
-		seq = new SequentialBehaviour();
-		addBehaviour(seq);
+/*		seq = new SequentialBehaviour();
+		addBehaviour(seq);*/
 		String msg = "predict," + name;
 		ACLMessage getPred = createMessage(forecastResponders, forecastProviders, msg,
 				FIPANames.InteractionProtocol.FIPA_REQUEST, ACLMessage.REQUEST);
@@ -97,13 +97,12 @@ public class ApplianceAgent extends Agent
 		MessageTemplate template = MessageTemplate.and(
 				MessageTemplate.MatchProtocol(FIPANames.InteractionProtocol.FIPA_REQUEST),
 				MessageTemplate.MatchPerformative(ACLMessage.REQUEST));
-		addBehaviour(new AchieveREResponder(this, template)
+		AchieveREResponder b =(new AchieveREResponder(this, template)
 		{
 			protected ACLMessage prepareResponse(ACLMessage request) throws NotUnderstoodException, RefuseException
 			{
 				System.out.println("Agent " + getLocalName() + ": REQUEST received from "
 						+ request.getSender().getName() + ". Action is " + request.getContent());
-				addBehaviour(a);
 				return null;
 			}
 
@@ -118,6 +117,8 @@ public class ApplianceAgent extends Agent
 				return inform;
 			}
 		});
+		b.registerHandleRequest(a);
+		addBehaviour(b);
 	}
 
 	private void register(String name, String type)

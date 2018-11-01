@@ -65,7 +65,8 @@ public class HomeAgent extends Agent
 				protected void onTick()
 				{
 					// register the services
-
+					predictedDemand = 0;
+					predictedGeneration = 0;
 					seq = new SequentialBehaviour();
 					addBehaviour(seq);
 
