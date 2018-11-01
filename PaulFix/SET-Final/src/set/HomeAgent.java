@@ -67,8 +67,8 @@ public class HomeAgent extends Agent
 					// register the services
 					predictedDemand = 0;
 					predictedGeneration = 0;
+					trade = false;
 					seq = new SequentialBehaviour();
-					addBehaviour(seq);
 
 					par = new ParallelBehaviour(ParallelBehaviour.WHEN_ALL);
 					// Phase 1: Send request for energy demand to Appliances with consumption energy
@@ -196,6 +196,7 @@ public class HomeAgent extends Agent
 
 					seq.addSubBehaviour(par);
 					seq.addSubBehaviour(negotiator);
+					addBehaviour(seq);
 				}
 			});
 		}
