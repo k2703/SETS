@@ -97,7 +97,7 @@ public class RetailerAgent extends Agent
 					{
 						try
 						{
-							if(currentOffer == 0)currentOffer = price.getPrice(Double.parseDouble(vals[1]));
+							if(currentOffer == 0)currentOffer = price.getPrice(Double.parseDouble(vals[1]), vals[2]);
 						} catch (NumberFormatException e)
 						{
 							e.printStackTrace();

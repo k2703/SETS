@@ -32,6 +32,7 @@ public class ApplianceAgent extends Agent
 	private double predicted;
 	private String name;
 	private postURL a;
+	private String tou;
 /*	private AID[] forecastProviders;
 	private int forecastResponders;
 	private SequentialBehaviour seq;
@@ -73,7 +74,8 @@ public class ApplianceAgent extends Agent
 				{
 					actual = data[0];
 					predicted = data[1];
-					String content = Double.toString(data[0]) + "," + Double.toString(data[1]);
+					tou = a.UseDate();
+					String content = Double.toString(data[0]) + "," + Double.toString(data[1] )+ "," + tou;
 					System.out.println("Agent " + getLocalName() + ": Action successfully performed");
 					ACLMessage inform = request.createReply();
 					inform.setPerformative(ACLMessage.INFORM);

@@ -24,6 +24,7 @@ public class postURL {
 	private double previous= 0;
 	private int hour = 0;
 	private String filename = "test.csv";
+	String tou;
 
 	// Method of the class that returns the filename to itself
 	public postURL(String filename) {
@@ -57,6 +58,7 @@ public class postURL {
 			int i;
 			for(i = 0; i < lines.size(); i++) if(lines.get(0)[i].equals(column)) break;
 			String actual = lines.get(getHour()+1)[getHeaderLocation(lines.get(0), column)];
+			tou = lines.get(getHour()+1)[getHeaderLocation(lines.get(0), "UNIX_TS")];
 			//System.out.println(actual);
 			result[0] = Double.parseDouble(actual);
 			//System.out.println(result[0]);
@@ -98,6 +100,11 @@ public class postURL {
 
 		}
 		return result;
+	}
+	
+	public String UseDate()
+	{
+		return tou;
 	}
 
 	/*public static void main(String args[])

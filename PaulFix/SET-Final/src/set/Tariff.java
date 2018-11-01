@@ -8,7 +8,7 @@ public class Tariff
 		this.type = type;
 	}
 	
-	public double getPrice(double usage) throws Exception
+	public double getPrice(double usage, String tou) throws Exception
 	{
 		switch(type)
 		{

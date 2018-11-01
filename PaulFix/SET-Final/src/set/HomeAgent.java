@@ -41,6 +41,7 @@ public class HomeAgent extends Agent
 	private double setSellingPrice;
 	private double originalBuyingPrice;
 	private double originalSellingPrice;
+	private String tou;
 
 	protected void setup()
 	{
@@ -104,6 +105,7 @@ public class HomeAgent extends Agent
 							String vals[] = inform.getContent().split(",");
 							actualDemand += Double.parseDouble(vals[0]);
 							predictedDemand += Double.parseDouble(vals[1]);
+							tou = vals[2];
 						}
 
 						protected void handleRefuse(ACLMessage refuse)
@@ -158,6 +160,7 @@ public class HomeAgent extends Agent
 							String vals[] = inform.getContent().split(",");
 							actualGeneration += Double.parseDouble(vals[0]);
 							predictedGeneration += Double.parseDouble(vals[1]);
+							tou = vals[2];
 						}
 
 						protected void handleRefuse(ACLMessage refuse)
@@ -247,13 +250,13 @@ public class HomeAgent extends Agent
 			String msgContent;
 			if (predictedDemand > predictedGeneration)
 			{
-				msgContent = "buy," + Double.toString(predictedDemand - predictedGeneration);
+				msgContent = "buy," + Double.toString(predictedDemand - predictedGeneration)+","+tou;
 				ACLMessage raMsg = createMessage(nRAResponders, raAgents, msgContent,
 						FIPANames.InteractionProtocol.FIPA_CONTRACT_NET, ACLMessage.CFP);
 				seq.addSubBehaviour(new Iterated(myAgent, raMsg));
 			} else
 			{
-				msgContent = "sell," + Double.toString(predictedGeneration - predictedDemand);
+				msgContent = "sell," + Double.toString(predictedGeneration - predictedDemand)+","+tou;
 				ACLMessage raMsg = createMessage(nRAResponders, raAgents, msgContent,
 						FIPANames.InteractionProtocol.FIPA_CONTRACT_NET, ACLMessage.CFP);
 				seq.addSubBehaviour(new IteratedS(myAgent, raMsg));
@@ -332,7 +335,7 @@ public class HomeAgent extends Agent
 						if(accept==null)
 						{
 							reply.setPerformative(ACLMessage.CFP);
-							reply.setContent("counter-buy," + (Double.toString(setBuyingPrice)));
+							reply.setContent("counter-buy," + (Double.toString(setBuyingPrice)) + ","+ tou);
 						}
 						acceptances.addElement(reply);
 					}
@@ -438,7 +441,7 @@ public class HomeAgent extends Agent
 						if(accept==null)
 						{
 							reply.setPerformative(ACLMessage.CFP);
-							reply.setContent("counter-sell," + (Double.toString(setSellingPrice)));
+							reply.setContent("counter-sell," + (Double.toString(setSellingPrice)) + ","+ tou);
 						}
 						acceptances.addElement(reply);
 					}
