@@ -30,6 +30,8 @@ public class Tariff
 			}
 			else return 40;
 		case 3:
+			// based on Peak vs off-peak electricity prices from:
+			// https://www.canstarblue.com.au/electricity/peak-off-peak-electricity-times/
 			SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH", Locale.ENGLISH);
 			Date date = df.parse(tou);
 			Calendar c = Calendar.getInstance();
@@ -41,7 +43,7 @@ public class Tariff
 				int hour = c.get(Calendar.HOUR_OF_DAY);
 				// weekday on-peak
 				if (hour >= 12 && hour < 18) {
-					return 42.0;
+					return 53.0;
 				}
 				// weekday mid-peak
 				if ((hour >= 8 && hour < 12) || (hour >= 18 && hour < 23)) {
@@ -49,7 +51,7 @@ public class Tariff
 				}
 			}			
 			// weekday off-peak or weekend
-			return 16.0;
+			return 14.0;
 		default:
 			throw new Exception("Wrong Tariff Type.");
 		}
