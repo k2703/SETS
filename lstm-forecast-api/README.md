@@ -46,7 +46,7 @@ curl -H "Content-Type: application/json" -X POST -d '' http://115.146.92.150:500
 # Conveys current observation to model and model returns corresponding prediction
 curl -H "Content-Type: application/json" -X POST -d '{"observation":"59.51666667"}' http://115.146.92.150:5000/lstmforecast/FGE/predict
 ```
-**NOTE: This is a stateful model. Whenever a simulation is started over again, pullback-model and deploy-model need to be called to create the original state of the model!**
+![](warning.png?raw=true)
 
 Be aware that you can change the appliance as needed! (Hence you might replace 'FGE' in the url in the example above).
 
