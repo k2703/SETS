@@ -1,6 +1,37 @@
 # Projectinformations for user
 
+## Using code base
+
+To start the web service on your current hosted server the following commands need to be executed:
+
+```bash
+
+# Change into source directory
+cd src/
+
+# Execute main to start web server
+python3 main.py
+
+```
+
+To build models the following commands need to be executed:
+
+```bash
+
+# Change into source directory
+cd src/model/
+
+# Execute main to start web server
+jupyter notebook 
+
+# Open the following notebook to buid models
+model-builder-template.ipynb
+
+```
+
 ## Access to API
+
+Once the web server is up and running one can access the API using the following calls:
 
 ```bash
 
