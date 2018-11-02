@@ -83,7 +83,7 @@ public class postURL {
 			while ((output = br.readLine()) != null) {
 			    
 				String str = output.replaceAll("[^\\d.]", "");
-				result[1] = Double.parseDouble( str);
+				result[1] = Double.parseDouble( str)*60;
 				//System.out.println(str);
 			}
 			incrHour();
