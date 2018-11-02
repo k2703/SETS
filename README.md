@@ -13,7 +13,7 @@ The prediction forecasting is provided via a fitted LSTM model provided via a we
 
 ![](forecast-api.png?raw=true)
 
-Note that the server ip address would need to be replaced accordingly. A more detailed overview of the project is given here https://github.com/k2703/SETS/edit/master/lstm-forecast-api
+Note that the server ip address would need to be replaced accordingly. A more detailed overview of the project is given here https://github.com/k2703/SETS/blob/master/lstm-forecast-api/FORECASTREADME.md
 
 # Use of CodeBase
 
