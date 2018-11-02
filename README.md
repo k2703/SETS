@@ -33,9 +33,13 @@ The -agents declarations can be tuned to your liking, provided it adheres by the
 A variety of .bat files are present in the SET-Final directory. These can be opened to automatically run a variety of scenarios.
 ##### Scenario overview
 __scenario1.bat:__ A scenario where the HomeAgent requests prices from the RetailerAgents, and chooses the best price out of those received without sending a counter offer.
+
 __scenario2.bat:__ A scenario where the HomeAgent negotiates with the RetailerAgents, who negotiate using their respective initial prices and the percent5 strategy.
+
 __scenario3.bat:__ A scenario where the HomeAgent negotiates with the RetailerAgents, who negotiate using their respective initial prices and the crement2 strategy.
+
 __scenario4.bat:__ A scenario where the HomeAgent negotiates with the RetailerAgents, who negotiate using their respective initial prices and the weightedavg strategy.
+
 __scenario5.bat:__ A scenario where the HomeAgent negotiates with the RetailerAgents, who negotiate using their respective initial prices and negotiation strategies. Identical to the run config provided in this README.
 
 ## Agent parameter reference
