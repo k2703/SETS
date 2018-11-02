@@ -19,6 +19,7 @@ import jade.domain.FIPAAgentManagement.ServiceDescription;
 import java.awt.EventQueue;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Vector;
 
 import org.jfree.ui.RefineryUtilities;
@@ -47,7 +48,6 @@ public class HomeAgent extends Agent
 	private double originalSellingPrice;
 	private String tou;
 	transient protected WOEPlot myGui;
-
 	protected void setup()
 	{
 		Object[] args = getArguments();
@@ -56,13 +56,14 @@ public class HomeAgent extends Agent
 		RefineryUtilities.centerFrameOnScreen(myGui);
 		myGui.setVisible(true);
 		myGui.start();
+		myGui.pushData(args[0].toString(), args[1].toString(), args[2].toString(), args[3].toString());
 		/*Runnable gui = new Runnable() {
 			@Override
 			public void run() {
 				WOEPlot demo = new WOEPlot("Checking");
 				demo.pack();
 				RefineryUtilities.centerFrameOnScreen(demo);
-				System.out.println(predictedDemand);
+				myGui.updateLog(predictedDemand);
 				if(predictedDemand != 0 && actualDemand != 0) demo.dataUpdate(predictedDemand, 2);
 				demo.setVisible(true);
 				demo.start();
@@ -82,13 +83,20 @@ public class HomeAgent extends Agent
 			setSellingPrice = originalSellingPrice;
 			predictedDemand = 0;
 			predictedGeneration = 0;
-
-			System.out.println("Acceptable price threshold set to: " + acceptedBuyPriceThreshold);
+			myGui.updateLog("Acceptable price threshold set to: " + acceptedBuyPriceThreshold);
 			addBehaviour(new TickerBehaviour(this, 5000)
 			{
 				protected void onTick()
 				{
 					// register the services
+					acceptedBuyPriceThreshold = Double.parseDouble(myGui.getMaxBuy());
+					setBuyingPrice = Double.parseDouble(myGui.getMinBuy());
+					acceptedSellPriceThreshold = Double.parseDouble(myGui.getMinSell());
+					setSellingPrice = Double.parseDouble(myGui.getMaxBuy());
+					myGui.updateLog("Max Buy price set:" + acceptedBuyPriceThreshold);
+					myGui.updateLog("Min Buy price set:" + setBuyingPrice);
+					myGui.updateLog("Min Sell price set:" + acceptedSellPriceThreshold);
+					myGui.updateLog("Max Sell price set:" + setSellingPrice);
 					predictedDemand = 0;
 					predictedGeneration = 0;
 					actualDemand = 0;
@@ -117,26 +125,28 @@ public class HomeAgent extends Agent
 
 						protected void handleAgree(ACLMessage agree)
 						{
-							System.out.println(
-									getLocalName() + ": " + agree.getSender().getName() + " has agreed to the request");
+							/*myGui.updateLog(
+									getLocalName() + ": " + agree.getSender().getName() + " has agreed to the request");*/
 						}
 
 						protected void handleInform(ACLMessage inform)
 						{
-							System.out.println(getLocalName() + ": " + inform.getSender().getName()
+							myGui.updateLog(getLocalName() + ": " + inform.getSender().getLocalName()
 									+ " successfully performed the requested action");
-							System.out.println(getLocalName() + ": " + inform.getSender().getName()
+							myGui.updateLog(getLocalName() + ": " + inform.getSender().getLocalName()
 									+ "'s predicted energy demand is " + inform.getContent());
 							String vals[] = inform.getContent().split(",");
-							actualDemand += Double.parseDouble(vals[0]);
-							predictedDemand += Double.parseDouble(vals[1]);
+							Double a = Double.parseDouble(vals[0]);
+							Double b = Double.parseDouble(vals[1]);
+							actualDemand += a;
+							predictedDemand += b;
 							tou = vals[2];
 						}
 
 						protected void handleRefuse(ACLMessage refuse)
 						{
-							System.out.println(getLocalName() + ": " + refuse.getSender().getName()
-									+ " refused to perform the requested action.");
+							/*myGui.updateLog(getLocalName() + ": " + refuse.getSender().getName()
+									+ " refused to perform the requested action.");*/
 							nAAGResponders--;
 						}
 
@@ -144,11 +154,11 @@ public class HomeAgent extends Agent
 						{
 							if (failure.getSender().equals(myAgent.getAMS()))
 							{
-								System.out.println(getLocalName() + ": " + "Responder does not exist");
+								/*myGui.updateLog(getLocalName() + ": " + "Responder does not exist");*/
 							} else
 							{
-								System.out.println(getLocalName() + ": " + failure.getSender().getName()
-										+ " failed to perform the requested action.");
+								/*myGui.updateLog(getLocalName() + ": " + failure.getSender().getName()
+										+ " failed to perform the requested action.");*/
 							}
 						}
 
@@ -156,13 +166,13 @@ public class HomeAgent extends Agent
 						{
 							if (notifications.size() < nAAGResponders)
 							{
-								System.out.println(getLocalName() + ": " + "Timeout expired: missing "
+								myGui.updateLog(getLocalName() + ": " + "Timeout expired: missing "
 										+ (nAACResponders - notifications.size()) + " responses");
 							} else
 							{
 								System.out
 										.println(getLocalName() + ": " + "Received notifications from every responder");
-								System.out.println("Predicted Demand is:" + predictedDemand);
+								myGui.updateLog("Predicted Demand is:" + predictedDemand);
 								myGui.dataUpdate(actualDemand, predictedDemand);
 							}
 						}
@@ -173,25 +183,27 @@ public class HomeAgent extends Agent
 
 						protected void handleAgree(ACLMessage agree)
 						{
-							System.out.println(
+							myGui.updateLog(
 									getLocalName() + ": " + agree.getSender().getName() + " has agreed to the request");
 						}
 
 						protected void handleInform(ACLMessage inform)
 						{
-							System.out.println(getLocalName() + ": " + inform.getSender().getName()
+							/*myGui.updateLog(getLocalName() + ": " + inform.getSender().getName()
 									+ " successfully performed the requested action");
-							System.out.println(getLocalName() + ": " + inform.getSender().getName()
-									+ "'s predicted energy generation is " + inform.getContent());
+							myGui.updateLog(getLocalName() + ": " + inform.getSender().getName()
+									+ "'s predicted energy generation is " + inform.getContent());*/
 							String vals[] = inform.getContent().split(",");
-							actualGeneration += Double.parseDouble(vals[0]);
-							predictedGeneration += Double.parseDouble(vals[1]);
+							Double a = Double.parseDouble(vals[0]);
+							Double b = Double.parseDouble(vals[1]);
+							actualGeneration += a;
+							predictedGeneration += b;
 							tou = vals[2];
 						}
 
 						protected void handleRefuse(ACLMessage refuse)
 						{
-							System.out.println(getLocalName() + ": " + refuse.getSender().getName()
+							myGui.updateLog(getLocalName() + ": " + refuse.getSender().getLocalName()
 									+ " refused to perform the requested action");
 							nAAGResponders--;
 						}
@@ -200,10 +212,10 @@ public class HomeAgent extends Agent
 						{
 							if (failure.getSender().equals(myAgent.getAMS()))
 							{
-								System.out.println(getLocalName() + ": " + "Responder does not exist");
+								myGui.updateLog(getLocalName() + ": " + "Responder does not exist");
 							} else
 							{
-								System.out.println(getLocalName() + ": " + failure.getSender().getName()
+								myGui.updateLog(getLocalName() + ": " + failure.getSender().getLocalName()
 										+ " failed to perform the requested action.");
 							}
 						}
@@ -212,13 +224,13 @@ public class HomeAgent extends Agent
 						{
 							if (notifications.size() < nAAGResponders)
 							{
-								System.out.println(getLocalName() + ": " + "Timeout expired: missing "
+								myGui.updateLog(getLocalName() + ": " + "Timeout expired: missing "
 										+ (nAAGResponders - notifications.size()) + " responses");
 							} else
 							{
 								System.out
 										.println(getLocalName() + ": " + "Received notifications from every responder");
-								System.out.println("Predicted Generation is:" + predictedGeneration);
+								myGui.updateLog("Predicted Generation is:" + predictedGeneration);
 							}
 						}
 					});
@@ -279,12 +291,14 @@ public class HomeAgent extends Agent
 				msgContent = "buy," + Double.toString(predictedDemand - predictedGeneration)+","+tou;
 				ACLMessage raMsg = createMessage(nRAResponders, raAgents, msgContent,
 						FIPANames.InteractionProtocol.FIPA_CONTRACT_NET, ACLMessage.CFP);
+				myGui.updateLog("Agent " + getLocalName() + " requesting to " + nRAResponders + " agents to " + msgContent + " wH electricity." );
 				seq.addSubBehaviour(new Iterated(myAgent, raMsg));
 			} else
 			{
 				msgContent = "sell," + Double.toString(predictedGeneration - predictedDemand)+","+tou;
 				ACLMessage raMsg = createMessage(nRAResponders, raAgents, msgContent,
 						FIPANames.InteractionProtocol.FIPA_CONTRACT_NET, ACLMessage.CFP);
+				myGui.updateLog("Agent " + getLocalName() + " requesting to " + nRAResponders + " agents to " + msgContent + " wH electricity." );
 				seq.addSubBehaviour(new IteratedS(myAgent, raMsg));
 			}
 
@@ -302,12 +316,12 @@ public class HomeAgent extends Agent
 
 		protected void handlePropose(ACLMessage propose, Vector v)
 		{
-			System.out.println("Agent " + propose.getSender().getName() + " proposed " + propose.getContent());
+			myGui.updateLog("Agent " + propose.getSender().getLocalName() + " proposed " + propose.getContent());
 		}
 
 		protected void handleRefuse(ACLMessage refuse)
 		{
-			System.out.println("Agent " + refuse.getSender().getName() + " refused.");
+			myGui.updateLog("Agent " + refuse.getSender().getLocalName() + " refused.");
 		}
 
 		protected void handleFailure(ACLMessage failure)
@@ -316,11 +330,11 @@ public class HomeAgent extends Agent
 			{
 				// FAILURE notification from the JADE runtime: the receiver
 				// does not exist
-				System.out.println("Responder does not exist");
+				myGui.updateLog("Responder does not exist");
 			} else
 			{
 
-				System.out.println("Negotiation with Agent " + failure.getSender().getName() + " ended.");
+				myGui.updateLog("Negotiation with Agent " + failure.getSender().getLocalName() + " ended.");
 			}
 			// Immediate failure --> we will not receive a response from this agent
 			nRAResponders--;
@@ -336,7 +350,7 @@ public class HomeAgent extends Agent
 				if (responses.size() < nRAResponders)
 				{
 					// Some responder didn't reply within the specified timeout
-					System.out.println("Timeout expired: missing " + (nRAResponders - responses.size()) + " responses");
+					myGui.updateLog("Timeout expired: missing " + (nRAResponders - responses.size()) + " responses");
 				}
 				// Evaluate proposals.
 				double bestProposal = 9999999;
@@ -362,6 +376,7 @@ public class HomeAgent extends Agent
 						{
 							reply.setPerformative(ACLMessage.CFP);
 							reply.setContent("counter-buy," + (Double.toString(setBuyingPrice)) + ","+ tou);
+							myGui.updateLog("Agent " + getLocalName() + " counter proposing " + (Double.toString(setBuyingPrice)) + "." );
 						}
 						acceptances.addElement(reply);
 					}
@@ -369,8 +384,8 @@ public class HomeAgent extends Agent
 				// Accept the proposal of the best proposer
 				if (accept != null)
 				{
-					System.out.println(
-							"Accepting proposal " + bestProposal + " from responder " + bestProposer.getName());
+					myGui.updateLog(
+							"Accepting proposal " + bestProposal + " from responder " + bestProposer.getLocalName());
 					accept.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
 				}
 				getDataStore().put(ALL_CFPS_KEY, acceptances);
@@ -394,7 +409,7 @@ public class HomeAgent extends Agent
 		protected void handleInform(ACLMessage inform)
 		{
 			System.out
-					.println("Agent " + inform.getSender().getName() + " successfully performed the requested action");
+					.println("Agent " + inform.getSender().getLocalName() + " successfully performed the requested action");
 		}
 	}
 	
@@ -408,12 +423,12 @@ public class HomeAgent extends Agent
 
 		protected void handlePropose(ACLMessage propose, Vector v)
 		{
-			System.out.println("Agent " + propose.getSender().getName() + " proposed " + propose.getContent());
+			myGui.updateLog("Agent " + propose.getSender().getLocalName() + " proposed " + propose.getContent());
 		}
 
 		protected void handleRefuse(ACLMessage refuse)
 		{
-			System.out.println("Agent " + refuse.getSender().getName() + " refused.");
+			myGui.updateLog("Agent " + refuse.getSender().getLocalName() + " refused.");
 		}
 
 		protected void handleFailure(ACLMessage failure)
@@ -422,11 +437,11 @@ public class HomeAgent extends Agent
 			{
 				// FAILURE notification from the JADE runtime: the receiver
 				// does not exist
-				System.out.println("Responder does not exist");
+				myGui.updateLog("Responder does not exist");
 			} else
 			{
 
-				System.out.println("Negotiation with Agent " + failure.getSender().getName() + " ended.");
+				myGui.updateLog("Negotiation with Agent " + failure.getSender().getLocalName() + " ended.");
 			}
 			// Immediate failure --> we will not receive a response from this agent
 			nRAResponders--;
@@ -442,7 +457,7 @@ public class HomeAgent extends Agent
 				if (responses.size() < nRAResponders)
 				{
 					// Some responder didn't reply within the specified timeout
-					System.out.println("Timeout expired: missing " + (nRAResponders - responses.size()) + " responses");
+					myGui.updateLog("Timeout expired: missing " + (nRAResponders - responses.size()) + " responses");
 				}
 				// Evaluate proposals.
 				double bestProposal = 0;
@@ -468,6 +483,7 @@ public class HomeAgent extends Agent
 						{
 							reply.setPerformative(ACLMessage.CFP);
 							reply.setContent("counter-sell," + (Double.toString(setSellingPrice)) + ","+ tou);
+							myGui.updateLog("Agent " + getLocalName() + " counter proposing " + (Double.toString(setSellingPrice)) + "." );
 						}
 						acceptances.addElement(reply);
 					}
@@ -475,8 +491,8 @@ public class HomeAgent extends Agent
 				// Accept the proposal of the best proposer
 				if (accept != null)
 				{
-					System.out.println(
-							"Accepting proposal " + bestProposal + " from responder " + bestProposer.getName());
+					myGui.updateLog(
+							"Accepting proposal " + bestProposal + " from responder " + bestProposer.getLocalName());
 					accept.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
 				}
 				getDataStore().put(ALL_CFPS_KEY, acceptances);
@@ -499,8 +515,7 @@ public class HomeAgent extends Agent
 
 		protected void handleInform(ACLMessage inform)
 		{
-			System.out
-					.println("Agent " + inform.getSender().getName() + " successfully performed the requested action");
+			myGui.updateLog("Agent " + inform.getSender().getName() + " successfully performed the requested action");
 		}
 	}
 }

@@ -27,6 +27,27 @@ public class RetailerAgent extends Agent
 	private double acceptedSellPriceThreshold;
 	private String act;
 	private int round;
+	private String pricetype;
+	String nego;
+	
+	public String[] getAgentParas()
+	{
+		String result[] = new String[5];
+		result[0] = Double.toString(setBuyingPrice);
+		result[1] = Double.toString(acceptedBuyPriceThreshold);
+		result[2] = Double.toString(acceptedSellPriceThreshold);
+		switch(pricetype)
+		{
+			case "1":
+				result[3] = "Fixed";
+			case "2":
+				result[3] = "Block Rate";
+			case "3":
+				result[3] = "Time Of Use";
+		}
+		result[4] = nego;
+		return result;
+	}
 	
 	NegotiationStrategy selectedStrategy;
 	
@@ -41,10 +62,12 @@ public class RetailerAgent extends Agent
 	{
 		Object args[] = getArguments();
 		register(args[0].toString(), args[1].toString());
+		pricetype = args[1].toString();
 		price = new Tariff(Integer.parseInt(args[2].toString()));
 		setBuyingPrice = Double.parseDouble(args[3].toString());
 		acceptedBuyPriceThreshold = Double.parseDouble(args[4].toString());
 		acceptedSellPriceThreshold = Double.parseDouble(args[5].toString());
+		nego = args[6].toString();
 		if (args[6].equals("percent5")) {
 				selectedStrategy = NegotiationStrategy.PERCENT_5;
 		} else if (args[6].equals("crement2")) {

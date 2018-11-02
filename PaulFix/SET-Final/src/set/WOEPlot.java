@@ -4,13 +4,20 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Random;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JInternalFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.Timer;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -29,27 +36,22 @@ public class WOEPlot extends ApplicationFrame {
 
 	private static final long serialVersionUID = 1L;
 	private static final String TITLE = "Usage vs Time";
-	private static final String START = "Start";
-	private static final String STOP = "Stop";
 	private static final int COUNT = 30 / 2;
-	private static final int FAST = 100;
-	private static final int SLOW = FAST * 5;
 	private float x, y;
 	private static final Random random = new Random();
 	private Timer timer;
 	private int counter = 0;
 	private JTabbedPane PLot1;
 	private final DynamicTimeSeriesCollection dataset;
-	private JTabbedPane PLot2;
-	private final DynamicTimeSeriesCollection aa1;
-	private JTabbedPane PLot3;
-	private final DynamicTimeSeriesCollection aa2;
-	private JTabbedPane PLot4;
-	private final DynamicTimeSeriesCollection aa3;
-	private JTabbedPane PLot5;
-	private final DynamicTimeSeriesCollection aa4;
-	private JTabbedPane PLot6;
-	private final DynamicTimeSeriesCollection aa5;
+	private JTextArea logger = new JTextArea();
+	private JTextField userBuyMin;
+	private JTextField userBuyMax;
+	private JTextField userSellMin;
+	private JTextField userSellMax;
+	private JLabel luserBuyMin;
+	private JLabel luserBuyMax;
+	private JLabel luserSellMin;
+	private JLabel luserSellMax;
 
 	CSVReader reader;
 	String[] readNextLine;
@@ -57,76 +59,22 @@ public class WOEPlot extends ApplicationFrame {
 	public WOEPlot(final String title) {
 		super(title);
 		dataset = new DynamicTimeSeriesCollection(2, COUNT, new Hour());
-		aa1 = new DynamicTimeSeriesCollection(2, COUNT, new Hour());
-		aa2 = new DynamicTimeSeriesCollection(2, COUNT, new Hour());
-		aa3 = new DynamicTimeSeriesCollection(2, COUNT, new Hour());
-		aa4 = new DynamicTimeSeriesCollection(2, COUNT, new Hour());
-		aa5 = new DynamicTimeSeriesCollection(2, COUNT, new Hour());
-		
 		dataset.setTimeBase(new Hour());
-		dataset.addSeries(plotData(), 0, "1");
-		dataset.addSeries(plotData(), 1, "2");
-		
-		aa1.setTimeBase(new Hour());
-		aa1.addSeries(plotData(), 0, "1");
-		aa1.addSeries(plotData(), 1, "2");
-		
-		aa2.setTimeBase(new Hour());
-		aa2.addSeries(plotData(), 0, "1");
-		aa2.addSeries(plotData(), 1, "2");
-		
-		aa3.setTimeBase(new Hour());
-		aa3.addSeries(plotData(), 0, "1");
-		aa3.addSeries(plotData(), 1, "2");
-		
-		aa4.setTimeBase(new Hour());
-		aa4.addSeries(plotData(), 0, "1");
-		aa4.addSeries(plotData(), 1, "2");
-		
-		aa5.setTimeBase(new Hour());
-		aa5.addSeries(plotData(), 0, "1");
-		aa5.addSeries(plotData(), 1, "2");
+		dataset.addSeries(plotData(), 0, "Predicted");
+		dataset.addSeries(plotData(), 1, "Actual");
 
+		userBuyMin = new JTextField();
+		userBuyMax = new JTextField();
+		userSellMin = new JTextField();
+		userSellMax = new JTextField();
+		luserBuyMin = new JLabel("Minimum buy price",JLabel.LEFT);
+		luserBuyMax = new JLabel("Maximum buy price",JLabel.LEFT);
+		luserSellMin = new JLabel("Minimum sell price",JLabel.LEFT);
+		luserSellMax = new JLabel("Maximum sell price",JLabel.LEFT);
 		JFreeChart chart = createChart(dataset);
 		ChartPanel chartPanel = new ChartPanel(chart);
 
-		final JButton run = new JButton(STOP);
-		run.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				String cmd = e.getActionCommand();
-				if (STOP.equals(cmd)) {
-					timer.stop();
-					run.setText(START);
-				} else {
-					timer.start();
-					run.setText(STOP);
-				}
-			}
-		});
-
-		final JComboBox combo = new JComboBox();
-		combo.addItem("Fast");
-		combo.addItem("Slow");
-		combo.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if ("Fast".equals(combo.getSelectedItem())) {
-					timer.setDelay(FAST);
-				} else {
-					timer.setDelay(SLOW);
-				}
-			}
-		});
-
-		JPanel btnPanel = new JPanel(new FlowLayout());
-		btnPanel.add(run);
-		btnPanel.add(combo);
-		this.add(btnPanel, BorderLayout.SOUTH);
-
-		timer = new Timer(SLOW, new ActionListener() {
+		timer = new Timer(1000, new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -137,22 +85,110 @@ public class WOEPlot extends ApplicationFrame {
 				System.out.println("TRIAL");
 			}
 		});
-
-		chartPanel.setPreferredSize(new Dimension(800, 600));
 		JPanel x = new JPanel();
 		x.add(chartPanel);
 		PLot1 = new JTabbedPane();
-		PLot1.addTab("Plot 1", x);
+		PLot1.addTab("Graph", x);
+		ScrollingTextArea y = new ScrollingTextArea(logger);
+		
+		/*logger.setBounds(5, 5, 1000, 1000);
+		y.add(logger);
+		JScrollPane scroll = new JScrollPane (logger);
+	    scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+	    scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);    
+		y.add(scroll);*/
+		PLot1.addTab("Logger", y);
+		JPanel settings = new JPanel();
+		settings.add(luserBuyMin);
+		settings.add(userBuyMin);
+		settings.add(luserBuyMax);
+		settings.add(userBuyMax);
+		settings.add(luserSellMin);
+		settings.add(userSellMin);
+		settings.add(luserSellMax);
+		settings.add(userSellMax);
+		
+		
+		PLot1.addTab("Settings", settings);
 		this.add(PLot1);
 	}
+	
+	public class ScrollingTextArea extends JPanel {
+		 
+		JTextArea txt = new JTextArea();
+		JScrollPane scrolltxt;
+	 
+		public ScrollingTextArea(JTextArea a) {
+	 
+			setLayout(null);
+			txt = a;
+			scrolltxt = new JScrollPane(txt);
+			scrolltxt.setBounds(3, 3, Toolkit.getDefaultToolkit().getScreenSize().width, 1080);
+			add(scrolltxt);		
+		}
+	}
 
+	public void updateLog(String msg)
+	{
+		logger.append(msg);
+		logger.append("\n");
+	}
 	public void dataUpdate(double a, double b) {
 		x = (float)a;
 		y = (float)b;
 		dataset.advanceTime();
+		/*switch(type)
+		{
+		case "HA":
+			dataset.advanceTime();
+			break;
+		case "FGE":
+			aa1.advanceTime();
+			break;
+		case "TVE":
+			aa2.advanceTime();
+			break;
+		case "SPA":
+			aa3.advanceTime();
+			break;
+		case "WOE":
+			aa4.advanceTime();
+			break;
+		case "HTE":
+			aa5.advanceTime();
+			break;
+		}*/
 	//	System.out.println(x + " " + y);
 	}
 
+	public void pushData(String a, String b, String c, String d)
+	{
+		userBuyMin.setText(b);
+		userBuyMax.setText(a);
+		userSellMin.setText(c);
+		userSellMax.setText(d);
+	}
+	
+	public String getMinBuy()
+	{
+		return userBuyMin.getText();
+	}
+	
+	public String getMaxBuy()
+	{
+		return userBuyMax.getText();
+	}
+	
+	public String getMinSell()
+	{
+		return userSellMin.getText();
+	}
+	
+	public String getMaxSell()
+	{
+		return userSellMax.getText();
+	}
+	
 	private float[] plotData() {
 		float[] firstPoint = new float[COUNT];
 //		for (int i = 0; i < firstPoint.length; i++) {
