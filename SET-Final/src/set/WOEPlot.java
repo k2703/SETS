@@ -100,8 +100,8 @@ public class WOEPlot extends ApplicationFrame {
 		y.add(scroll);*/
 		PLot1.addTab("Logger", y);
 		JPanel settings = new JPanel();
-		settings.add(paid);
 		settings.add(new JLabel("Paid so Far"));
+		settings.add(paid);
 		settings.add(luserBuyMin);
 		settings.add(userBuyMin);
 		settings.add(luserBuyMax);
