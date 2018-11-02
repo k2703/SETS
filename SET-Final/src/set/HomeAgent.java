@@ -381,13 +381,13 @@ public class HomeAgent extends Agent
 						"Accepting proposal " + bestProposal + " from responder " + bestProposer.getName());
 				if(predictedDemand - actualDemand > 0)
 				{
-					paid = bestProposal * predictedDemand;
+					paid = (bestProposal * predictedDemand) / 1000;
 					myGui.updateBalance(paid);
 					myGui.updateLog("Agent " + getLocalName() + " paid : "+ paid);
 				}
 				else
 				{
-					paid = bestProposal * actualDemand + (actualDemand - predictedDemand) + FIXEDPRICE;
+					paid = (bestProposal * actualDemand + (actualDemand - predictedDemand) + FIXEDPRICE) / 1000;
 					myGui.updateBalance(paid);
 					myGui.updateLog("Agent " + getLocalName() + " paid : "+ paid);
 				}
@@ -479,13 +479,13 @@ public class HomeAgent extends Agent
 							"Accepting proposal " + bestProposal + " from responder " + bestProposer.getLocalName());
 					if(predictedDemand - actualDemand > 0)
 					{
-						paid = bestProposal * predictedDemand;
+						paid = (bestProposal * predictedDemand) / 1000;
 						myGui.updateBalance(paid);
 						myGui.updateLog("Agent " + getLocalName() + " paid : "+ paid);
 					}
 					else
 					{
-						paid = bestProposal * actualDemand + (actualDemand - predictedDemand) + FIXEDPRICE;
+						paid = (bestProposal * actualDemand + (actualDemand - predictedDemand) + FIXEDPRICE) / 1000;
 						myGui.updateBalance(paid);
 						myGui.updateLog("Agent " + getLocalName() + " paid : "+ paid);
 					}
