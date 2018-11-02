@@ -52,6 +52,7 @@ public class WOEPlot extends ApplicationFrame {
 	private JLabel luserBuyMax;
 	private JLabel luserSellMin;
 	private JLabel luserSellMax;
+	private JTextArea paid = new JTextArea();
 
 	CSVReader reader;
 	String[] readNextLine;
@@ -62,7 +63,7 @@ public class WOEPlot extends ApplicationFrame {
 		dataset.setTimeBase(new Hour());
 		dataset.addSeries(plotData(), 0, "Predicted");
 		dataset.addSeries(plotData(), 1, "Actual");
-
+		paid.setText("0");
 		userBuyMin = new JTextField();
 		userBuyMax = new JTextField();
 		userSellMin = new JTextField();
@@ -90,15 +91,17 @@ public class WOEPlot extends ApplicationFrame {
 		PLot1 = new JTabbedPane();
 		PLot1.addTab("Graph", x);
 		ScrollingTextArea y = new ScrollingTextArea(logger);
-		
 		/*logger.setBounds(5, 5, 1000, 1000);
 		y.add(logger);
 		JScrollPane scroll = new JScrollPane (logger);
 	    scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 	    scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);    
 		y.add(scroll);*/
+		
 		PLot1.addTab("Logger", y);
 		JPanel settings = new JPanel();
+		settings.add(new JLabel("Paid so Far"));
+		settings.add(paid);
 		settings.add(luserBuyMin);
 		settings.add(userBuyMin);
 		settings.add(luserBuyMax);
@@ -111,6 +114,12 @@ public class WOEPlot extends ApplicationFrame {
 		
 		PLot1.addTab("Settings", settings);
 		this.add(PLot1);
+	}
+	
+	public void updateBalance(double a)
+	{
+		double b = Double.parseDouble(paid.getText()) + a;
+		paid.setText(Double.toString(b));
 	}
 	
 	public class ScrollingTextArea extends JPanel {

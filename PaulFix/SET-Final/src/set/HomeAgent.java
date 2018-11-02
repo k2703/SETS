@@ -48,6 +48,8 @@ public class HomeAgent extends Agent
 	private double originalSellingPrice;
 	private String tou;
 	transient protected WOEPlot myGui;
+	private final int FIXEDPRICE = 40;
+	private double paid = 0;
 	protected void setup()
 	{
 		Object[] args = getArguments();
@@ -83,7 +85,7 @@ public class HomeAgent extends Agent
 			setSellingPrice = originalSellingPrice;
 			predictedDemand = 0;
 			predictedGeneration = 0;
-			myGui.updateLog("Acceptable price threshold set to: " + acceptedBuyPriceThreshold);
+			paid = 0;
 			addBehaviour(new TickerBehaviour(this, 5000)
 			{
 				protected void onTick()
@@ -101,6 +103,7 @@ public class HomeAgent extends Agent
 					predictedGeneration = 0;
 					actualDemand = 0;
 					actualGeneration = 0;
+					paid = 0;
 					trade = false;
 					seq = new SequentialBehaviour();
 
@@ -291,14 +294,14 @@ public class HomeAgent extends Agent
 				msgContent = "buy," + Double.toString(predictedDemand - predictedGeneration)+","+tou;
 				ACLMessage raMsg = createMessage(nRAResponders, raAgents, msgContent,
 						FIPANames.InteractionProtocol.FIPA_CONTRACT_NET, ACLMessage.CFP);
-				myGui.updateLog("Agent " + getLocalName() + " requesting to " + nRAResponders + " agents to " + msgContent + " wH electricity." );
+				myGui.updateLog("Agent " + getLocalName() + " requesting to " + nRAResponders + " agents to " + msgContent + " wH electricity on given date." );
 				seq.addSubBehaviour(new Iterated(myAgent, raMsg));
 			} else
 			{
 				msgContent = "sell," + Double.toString(predictedGeneration - predictedDemand)+","+tou;
 				ACLMessage raMsg = createMessage(nRAResponders, raAgents, msgContent,
 						FIPANames.InteractionProtocol.FIPA_CONTRACT_NET, ACLMessage.CFP);
-				myGui.updateLog("Agent " + getLocalName() + " requesting to " + nRAResponders + " agents to " + msgContent + " wH electricity." );
+				myGui.updateLog("Agent " + getLocalName() + " requesting to " + nRAResponders + " agents to " + msgContent + " wH electricity on given date." );
 				seq.addSubBehaviour(new IteratedS(myAgent, raMsg));
 			}
 
@@ -386,6 +389,18 @@ public class HomeAgent extends Agent
 				{
 					myGui.updateLog(
 							"Accepting proposal " + bestProposal + " from responder " + bestProposer.getLocalName());
+					if(predictedDemand - actualDemand > 0)
+					{
+						paid = bestProposal * predictedDemand;
+						myGui.updateBalance(paid);
+						myGui.updateLog("Agent " + getLocalName() + " paid : "+ paid);
+					}
+					else
+					{
+						paid = bestProposal * actualDemand + (actualDemand - predictedDemand) + FIXEDPRICE;
+						myGui.updateBalance(paid);
+						myGui.updateLog("Agent " + getLocalName() + " paid : "+ paid);
+					}
 					accept.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
 				}
 				getDataStore().put(ALL_CFPS_KEY, acceptances);
