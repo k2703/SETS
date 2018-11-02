@@ -14,6 +14,8 @@ python3 main.py
 
 ```
 
+Note: The project on host `115.146.92.150` is located in `/home/ubuntu/Notebooks`
+
 To build models the following commands need to be executed:
 
 ```bash
