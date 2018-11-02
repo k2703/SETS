@@ -48,7 +48,9 @@ public class HomeAgent extends Agent
 	private double originalSellingPrice;
 	private String tou;
 	transient protected WOEPlot myGui;
-	
+	private final int FIXEDPRICE = 40;
+	private double paid = 0;
+
 	NegotiationConduction selectedConduction;
 	
 	enum NegotiationConduction  {
@@ -79,6 +81,8 @@ public class HomeAgent extends Agent
 			setSellingPrice = originalSellingPrice;
 			predictedDemand = 0;
 			predictedGeneration = 0;
+			paid = 0;
+
 			myGui.updateLog("Acceptable price threshold set to: " + acceptedBuyPriceThreshold);
 			addBehaviour(new TickerBehaviour(this, 5000)
 			{
@@ -375,6 +379,18 @@ public class HomeAgent extends Agent
 			{
 				System.out.println(
 						"Accepting proposal " + bestProposal + " from responder " + bestProposer.getName());
+				if(predictedDemand - actualDemand > 0)
+				{
+					paid = bestProposal * predictedDemand;
+					myGui.updateBalance(paid);
+					myGui.updateLog("Agent " + getLocalName() + " paid : "+ paid);
+				}
+				else
+				{
+					paid = bestProposal * actualDemand + (actualDemand - predictedDemand) + FIXEDPRICE;
+					myGui.updateBalance(paid);
+					myGui.updateLog("Agent " + getLocalName() + " paid : "+ paid);
+				}
 				accept.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
 			}
 			getDataStore().put(ALL_CFPS_KEY, acceptances);
@@ -461,6 +477,18 @@ public class HomeAgent extends Agent
 				{
 					myGui.updateLog(
 							"Accepting proposal " + bestProposal + " from responder " + bestProposer.getLocalName());
+					if(predictedDemand - actualDemand > 0)
+					{
+						paid = bestProposal * predictedDemand;
+						myGui.updateBalance(paid);
+						myGui.updateLog("Agent " + getLocalName() + " paid : "+ paid);
+					}
+					else
+					{
+						paid = bestProposal * actualDemand + (actualDemand - predictedDemand) + FIXEDPRICE;
+						myGui.updateBalance(paid);
+						myGui.updateLog("Agent " + getLocalName() + " paid : "+ paid);
+					}
 					accept.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
 				}
 				getDataStore().put(ALL_CFPS_KEY, acceptances);
