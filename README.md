@@ -7,7 +7,9 @@ The used jade environment is shown in the following figure.
 
 ![](jade-env.png?raw=true)
 
-All its components (Agent Classes) can be found in the `jade-env` folder.
+For an overview at the project hava a look at: https://github.com/k2703/SETS/blob/master/SET-Final/JADEREADME.md
+
+All its components (Agent Classes) can be found in: https://github.com/k2703/SETS/tree/master/SET-Final
 
 The prediction forecasting is provided via a fitted LSTM model provided via a web service. For an overview see the following picture:
 
