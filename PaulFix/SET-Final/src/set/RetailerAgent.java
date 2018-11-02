@@ -26,6 +26,15 @@ public class RetailerAgent extends Agent
 	private double acceptedBuyPriceThreshold;
 	private double acceptedSellPriceThreshold;
 	private String act;
+	private int round;
+	
+	NegotiationStrategy selectedStrategy;
+	
+	enum NegotiationStrategy  {
+		PERCENT_5,
+		CREMENT_2,
+		WEIGHTED_AVG
+	}
 	
 
 	protected void setup()
@@ -36,6 +45,18 @@ public class RetailerAgent extends Agent
 		setBuyingPrice = Double.parseDouble(args[3].toString());
 		acceptedBuyPriceThreshold = Double.parseDouble(args[4].toString());
 		acceptedSellPriceThreshold = Double.parseDouble(args[5].toString());
+		if (args[6].equals("percent5")) {
+				selectedStrategy = NegotiationStrategy.PERCENT_5;
+		} else if (args[6].equals("crement2")) {
+				selectedStrategy = NegotiationStrategy.CREMENT_2;
+		} else if (args[6].equals("weightedavg")) {
+				selectedStrategy = NegotiationStrategy.WEIGHTED_AVG;
+		} else {
+			// if negotiation strategy is unrecognized, default to percent5
+			System.out.println("Negotiation strategy not recognized for Agent " + getLocalName());
+			System.out.println("Defaulting to Increase/Decrease by 5%");
+			selectedStrategy = NegotiationStrategy.PERCENT_5;
+		}
 		System.out.println("Agent " + getLocalName() + " waiting for CFP...");
 		MessageTemplate template = MessageTemplate.and(
 				MessageTemplate.MatchProtocol(FIPANames.InteractionProtocol.FIPA_CONTRACT_NET),
@@ -75,6 +96,50 @@ public class RetailerAgent extends Agent
 
 	private class IteratedR extends SSResponderDispatcher
 	{
+		private double generateSellOffer(double aOurOffer, double aReceivedOffer, int round) {
+			double result = aOurOffer;
+			
+			if (selectedStrategy.equals(NegotiationStrategy.PERCENT_5)) {
+				// decrease our sell offer by 5%
+				result = aOurOffer * 0.95;
+			} else if (selectedStrategy.equals(NegotiationStrategy.CREMENT_2)) {
+				// decrement our buy offer by 2
+				result = aOurOffer - 2;
+			} else if (selectedStrategy.equals(NegotiationStrategy.WEIGHTED_AVG)) {
+				// the first message received is the energy usage, not the offer
+				// we shouldn't use it to calculate a price
+				if (round > 1) {
+					// this occurs on a one-round delay
+					result = (( aOurOffer * 2) + aReceivedOffer ) / 3;
+				}
+				
+			}
+			
+			// return the new sell price
+			return result;
+		}
+		
+		private double generateBuyOffer(double aOurOffer, double aReceivedOffer, int round) {
+			double result = aOurOffer;
+			
+			if (selectedStrategy.equals(NegotiationStrategy.PERCENT_5)) {
+				// increase our buy offer by 5%
+				result = aOurOffer * 1.05;
+			} else if (selectedStrategy.equals(NegotiationStrategy.CREMENT_2)) {
+				// increment our buy offer by 2
+				result = aOurOffer + 2;
+			} else if (selectedStrategy.equals(NegotiationStrategy.WEIGHTED_AVG)) {
+				// the first message received is the energy usage, not the offer
+				// we shouldn't use it to calculate a price
+				if (round > 1) {
+					// this occurs on a one-round delay
+					result = (( aOurOffer * 2) + aReceivedOffer ) / 3;
+				}	
+			}
+			
+			// return the new buy price
+			return result;
+		}
 
 		private IteratedR(Agent agent, MessageTemplate template)
 		{
@@ -83,6 +148,7 @@ public class RetailerAgent extends Agent
 
 		protected Behaviour createResponder(ACLMessage message)
 		{
+			round = 1;
 			System.out.println("createResponder for " + myAgent.getLocalName());
 			return new SSIteratedContractNetResponder(myAgent, message)
 			{
@@ -125,7 +191,9 @@ public class RetailerAgent extends Agent
 						{
 							proposal.setPerformative(ACLMessage.FAILURE);
 						}
-						currentOffer *= 0.95;
+						// generate the new sell price
+						currentOffer = generateSellOffer(currentOffer, Double.parseDouble(vals[1]), round);
+						// currentOffer *= 0.95;
 					} 
 					else
 					{
@@ -137,9 +205,13 @@ public class RetailerAgent extends Agent
 						{
 							proposal.setPerformative(ACLMessage.FAILURE);
 						}
-						currentOffer *= 1.05;
+						// generate the new buy price
+						currentOffer = generateBuyOffer(currentOffer, Double.parseDouble(vals[1]), round);
+						// currentOffer *= 1.05;
 					}
 
+					// it is the next round
+					round ++;
 					return proposal;
 				}
 
@@ -150,6 +222,8 @@ public class RetailerAgent extends Agent
 					System.out.println("Agent " + getLocalName() + ": Action successfully performed");
 					ACLMessage inform = accept.createReply();
 					inform.setPerformative(ACLMessage.INFORM);
+					// reset the round counter
+					round = 1;
 					return inform;
 				}
 
