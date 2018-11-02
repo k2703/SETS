@@ -24,9 +24,8 @@ import org.jfree.ui.ApplicationFrame;
 import org.jfree.ui.RefineryUtilities;
 import au.com.bytecode.opencsv.CSVReader;
 
-/** @see http://stackoverflow.com/questions/5048852 */
 public class WOEPlot extends ApplicationFrame {
-
+	
 	private static final long serialVersionUID = 1L;
 	private static final String TITLE = "Usage vs Time";
 	private static final String START = "Start";
@@ -44,10 +43,12 @@ public class WOEPlot extends ApplicationFrame {
 	CSVReader reader;
 	String[] readNextLine;
 
+	// Initialize and populate the series
 	public WOEPlot(final String title) {
 		super(title);
 		dataset = new DynamicTimeSeriesCollection(2, COUNT, new Hour());
 
+		// Create 2 dynamic time series plots
 		dataset.setTimeBase(new Hour());
 		dataset.addSeries(plotData(), 0, "1");
 		dataset.addSeries(plotData(), 1, "2");
@@ -103,6 +104,7 @@ public class WOEPlot extends ApplicationFrame {
 			}
 		});
 
+		// Set attributes for the plot 
 		chartPanel.setPreferredSize(new Dimension(800, 600));
 		JPanel x = new JPanel();
 		x.add(chartPanel);
@@ -111,6 +113,7 @@ public class WOEPlot extends ApplicationFrame {
 		this.add(PLot1);
 	}
 
+	// Update the real/predicted values for the series
 	public void dataUpdate(double a, double b) {
 		x = (float)a;
 		y = (float)b;
@@ -118,6 +121,7 @@ public class WOEPlot extends ApplicationFrame {
 	//	System.out.println(x + " " + y);
 	}
 
+	// Create an instance of the plot in the time series
 	private float[] plotData() {
 		float[] firstPoint = new float[COUNT];
 //		for (int i = 0; i < firstPoint.length; i++) {
@@ -126,6 +130,7 @@ public class WOEPlot extends ApplicationFrame {
 		return firstPoint;
 	}
 
+	// Creates the TimeSeries and inputs the dataset and sets domain/range
 	private JFreeChart createChart(final XYDataset dataset) {
 		final JFreeChart result = ChartFactory.createTimeSeriesChart(TITLE, "HH", "Watthours", dataset, true, true,
 				false);
@@ -140,10 +145,12 @@ public class WOEPlot extends ApplicationFrame {
 		return result;
 	}
 
+	// Start the timer for the plot
 	public void start() {
 		timer.start();
 	}
 
+	// Use Swing to deploy and dynamically plot the series
 	public static void main(final String[] args) {
 		EventQueue.invokeLater(new Runnable() {
 
