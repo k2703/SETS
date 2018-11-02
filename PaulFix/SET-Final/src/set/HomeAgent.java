@@ -48,6 +48,14 @@ public class HomeAgent extends Agent
 	private double originalSellingPrice;
 	private String tou;
 	transient protected WOEPlot myGui;
+	
+	NegotiationConduction selectedConduction;
+	
+	enum NegotiationConduction  {
+		SINGLE_ROUND,
+		MULTI_ROUND
+	}
+	
 	protected void setup()
 	{
 		Object[] args = getArguments();
@@ -57,19 +65,7 @@ public class HomeAgent extends Agent
 		myGui.setVisible(true);
 		myGui.start();
 		myGui.pushData(args[0].toString(), args[1].toString(), args[2].toString(), args[3].toString());
-		/*Runnable gui = new Runnable() {
-			@Override
-			public void run() {
-				WOEPlot demo = new WOEPlot("Checking");
-				demo.pack();
-				RefineryUtilities.centerFrameOnScreen(demo);
-				myGui.updateLog(predictedDemand);
-				if(predictedDemand != 0 && actualDemand != 0) demo.dataUpdate(predictedDemand, 2);
-				demo.setVisible(true);
-				demo.start();
-			}
-		};*/
-		//EventQueue.invokeLater(gui);
+
 		if (args != null && args.length > 0)
 		{
 			acceptedBuyPriceThreshold = Double.parseDouble(args[0].toString());
@@ -103,6 +99,16 @@ public class HomeAgent extends Agent
 					actualGeneration = 0;
 					trade = false;
 					seq = new SequentialBehaviour();
+					
+					if (args[4].equals("single")) {
+						selectedConduction = NegotiationConduction.SINGLE_ROUND;
+					} else if (args[4].equals("multi")) {
+						selectedConduction = NegotiationConduction.MULTI_ROUND;
+					} else {
+						System.out.println("Negotiation conduction not recognized for Agent " + getLocalName());
+						System.out.println("Defaulting to multi-round negotiation.");			
+						selectedConduction = NegotiationConduction.MULTI_ROUND;
+					}
 
 					par = new ParallelBehaviour(ParallelBehaviour.WHEN_ALL);
 					// Phase 1: Send request for energy demand to Appliances with consumption energy
@@ -125,8 +131,6 @@ public class HomeAgent extends Agent
 
 						protected void handleAgree(ACLMessage agree)
 						{
-							/*myGui.updateLog(
-									getLocalName() + ": " + agree.getSender().getName() + " has agreed to the request");*/
 						}
 
 						protected void handleInform(ACLMessage inform)
@@ -145,21 +149,12 @@ public class HomeAgent extends Agent
 
 						protected void handleRefuse(ACLMessage refuse)
 						{
-							/*myGui.updateLog(getLocalName() + ": " + refuse.getSender().getName()
-									+ " refused to perform the requested action.");*/
 							nAAGResponders--;
 						}
 
 						protected void handleFailure(ACLMessage failure)
 						{
-							if (failure.getSender().equals(myAgent.getAMS()))
-							{
-								/*myGui.updateLog(getLocalName() + ": " + "Responder does not exist");*/
-							} else
-							{
-								/*myGui.updateLog(getLocalName() + ": " + failure.getSender().getName()
-										+ " failed to perform the requested action.");*/
-							}
+
 						}
 
 						protected void handleAllResultNotifications(Vector notifications)
@@ -189,10 +184,6 @@ public class HomeAgent extends Agent
 
 						protected void handleInform(ACLMessage inform)
 						{
-							/*myGui.updateLog(getLocalName() + ": " + inform.getSender().getName()
-									+ " successfully performed the requested action");
-							myGui.updateLog(getLocalName() + ": " + inform.getSender().getName()
-									+ "'s predicted energy generation is " + inform.getContent());*/
 							String vals[] = inform.getContent().split(",");
 							Double a = Double.parseDouble(vals[0]);
 							Double b = Double.parseDouble(vals[1]);
@@ -236,7 +227,13 @@ public class HomeAgent extends Agent
 					});
 
 					seq.addSubBehaviour(par);
-					seq.addSubBehaviour(negotiator);
+					
+					if (selectedConduction.equals(NegotiationConduction.SINGLE_ROUND)) {
+						seq.addSubBehaviour(singleRoundNegotiator);
+					} else {
+						seq.addSubBehaviour(negotiator);
+					}
+					
 					addBehaviour(seq);
 				}
 			});
@@ -306,6 +303,84 @@ public class HomeAgent extends Agent
 
 	};
 
+	OneShotBehaviour singleRoundNegotiator = new OneShotBehaviour()
+	{
+
+		@Override
+		public void action()
+		{
+			String msgContent;
+			if (predictedDemand > predictedGeneration)
+			{
+				msgContent = "buy," + Double.toString(predictedDemand - predictedGeneration)+","+tou;
+				ACLMessage raMsg = createMessage(nRAResponders, raAgents, msgContent,
+						FIPANames.InteractionProtocol.FIPA_CONTRACT_NET, ACLMessage.CFP);
+				// NEW
+				seq.addSubBehaviour(new SingleNegotiator(myAgent, raMsg));
+				// END NEW
+			} else
+			{
+				msgContent = "sell," + Double.toString(predictedGeneration - predictedDemand)+","+tou;
+				ACLMessage raMsg = createMessage(nRAResponders, raAgents, msgContent,
+						FIPANames.InteractionProtocol.FIPA_CONTRACT_NET, ACLMessage.CFP);
+				// NEW
+				seq.addSubBehaviour(new SingleNegotiator(myAgent, raMsg));
+				// END NEW
+			}
+
+		}
+
+	};
+	
+	private class SingleNegotiator extends Iterated
+	{
+		public SingleNegotiator(Agent a, ACLMessage cfp) {
+			super(a, cfp);
+		}
+
+		@Override
+		protected void handleAllResponses(Vector responses, Vector acceptances)
+		{
+
+			if (responses.size() < nRAResponders)
+			{
+				// Some responder didn't reply within the specified timeout
+				System.out.println("Timeout expired: missing " + (nRAResponders - responses.size()) + " responses");
+			}
+			// Evaluate proposals.
+			double bestProposal = 9999999;
+			AID bestProposer = null;
+			ACLMessage accept = null;
+			Enumeration e = responses.elements();
+			while (e.hasMoreElements())
+			{
+				ACLMessage msg = (ACLMessage) e.nextElement();
+				if (msg.getPerformative() == ACLMessage.PROPOSE)
+				{
+					ACLMessage reply = msg.createReply();
+					reply.setPerformative(ACLMessage.REJECT_PROPOSAL);
+					double proposal = Double.parseDouble(msg.getContent());
+					if (proposal < bestProposal)
+					{
+						bestProposal = proposal;
+						bestProposer = msg.getSender();
+						accept = reply;
+						trade = true;
+					} 
+					acceptances.addElement(reply);
+				}
+			}
+			// Accept the proposal of the best proposer
+			if (accept != null)
+			{
+				System.out.println(
+						"Accepting proposal " + bestProposal + " from responder " + bestProposer.getName());
+				accept.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
+			}
+			getDataStore().put(ALL_CFPS_KEY, acceptances);
+		}
+	}
+	
 	private class Iterated extends ContractNetInitiator
 	{
 

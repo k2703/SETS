@@ -6,18 +6,28 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="lib" path="C:/Program Files/Java/JADE/jade/lib/jade.jar"/>
-	<classpathentry kind="lib" path="C:/Program Files/Java/JADE/jade/lib/jadeExamples.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Person/eclipse-workspace/SETS/SETS/PaulFix/SET-Final/libs/jarfiles/commons-logging-1.2.1.1.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Person/eclipse-workspace/SETS/SETS/PaulFix/SET-Final/libs/jarfiles/httpclient-4.5.6.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Person/eclipse-workspace/SETS/SETS/PaulFix/SET-Final/libs/jarfiles/httpclient-cache-4.5.6.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Person/eclipse-workspace/SETS/SETS/PaulFix/SET-Final/libs/jarfiles/httpclient-win-4.5.6.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Person/eclipse-workspace/SETS/SETS/PaulFix/SET-Final/libs/jarfiles/httpcore-4.4.10.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Person/eclipse-workspace/SETS/SETS/PaulFix/SET-Final/libs/jarfiles/java-util-1.3.1.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Person/eclipse-workspace/SETS/SETS/PaulFix/SET-Final/libs/jarfiles/jcommon-1.0.23.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Person/eclipse-workspace/SETS/SETS/PaulFix/SET-Final/libs/jarfiles/jcommon-xml-1.0.23.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Person/eclipse-workspace/SETS/SETS/PaulFix/SET-Final/libs/jarfiles/jfreechart-1.0.19-demo.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Person/eclipse-workspace/SETS/SETS/PaulFix/SET-Final/libs/jarfiles/opencsv-2.4.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Person/eclipse-workspace/SETS/SETS/PaulFix/SET-Final/libs/jarfiles/jfreechart-1.0.19.jar"/>
+	<classpathentry kind="lib" path="libs/jarfiles/commons-logging-1.2.1.1.jar"/>
+	<classpathentry kind="lib" path="libs/jarfiles/hamcrest-core-1.3.jar"/>
+	<classpathentry kind="lib" path="libs/jarfiles/httpclient-4.5.6.jar"/>
+	<classpathentry kind="lib" path="libs/jarfiles/httpclient-cache-4.5.6.jar"/>
+	<classpathentry kind="lib" path="libs/jarfiles/httpclient-win-4.5.6.jar"/>
+	<classpathentry kind="lib" path="libs/jarfiles/httpcore-4.4.10.jar"/>
+	<classpathentry kind="lib" path="libs/jarfiles/java-util-1.3.1.jar"/>
+	<classpathentry kind="lib" path="libs/jarfiles/jcommon-1.0.23.jar"/>
+	<classpathentry kind="lib" path="libs/jarfiles/jcommon-xml-1.0.23.jar"/>
+	<classpathentry kind="lib" path="libs/jarfiles/jdbc-api-1.4-1.jar"/>
+	<classpathentry kind="lib" path="libs/jarfiles/jfreechart-1.0.19-demo.jar"/>
+	<classpathentry kind="lib" path="libs/jarfiles/jfreechart-1.0.19-experimental.jar"/>
+	<classpathentry kind="lib" path="libs/jarfiles/jfreechart-1.0.19-swt.jar"/>
+	<classpathentry kind="lib" path="libs/jarfiles/jfreechart-1.0.19.jar"/>
+	<classpathentry kind="lib" path="libs/jarfiles/jfreesvg-2.0.jar"/>
+	<classpathentry kind="lib" path="libs/jarfiles/junit-4.11.jar"/>
+	<classpathentry kind="lib" path="libs/jarfiles/opencsv-2.4.jar"/>
+	<classpathentry kind="lib" path="libs/jarfiles/orsoncharts-1.4-eval-nofx.jar"/>
+	<classpathentry kind="lib" path="libs/jarfiles/orsonpdf-1.6-eval.jar"/>
+	<classpathentry kind="lib" path="libs/jarfiles/servlet.jar"/>
+	<classpathentry kind="lib" path="libs/jarfiles/swtgraphics2d.jar"/>
+	<classpathentry kind="lib" path="libs/jarfiles/jade.jar"/>
+	<classpathentry kind="lib" path="libs/jarfiles/jadeExamples.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
