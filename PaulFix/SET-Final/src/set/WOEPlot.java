@@ -40,6 +40,16 @@ public class WOEPlot extends ApplicationFrame {
 	private int counter = 0;
 	private JTabbedPane PLot1;
 	private final DynamicTimeSeriesCollection dataset;
+	private JTabbedPane PLot2;
+	private final DynamicTimeSeriesCollection aa1;
+	private JTabbedPane PLot3;
+	private final DynamicTimeSeriesCollection aa2;
+	private JTabbedPane PLot4;
+	private final DynamicTimeSeriesCollection aa3;
+	private JTabbedPane PLot5;
+	private final DynamicTimeSeriesCollection aa4;
+	private JTabbedPane PLot6;
+	private final DynamicTimeSeriesCollection aa5;
 
 	CSVReader reader;
 	String[] readNextLine;
@@ -47,10 +57,35 @@ public class WOEPlot extends ApplicationFrame {
 	public WOEPlot(final String title) {
 		super(title);
 		dataset = new DynamicTimeSeriesCollection(2, COUNT, new Hour());
-
+		aa1 = new DynamicTimeSeriesCollection(2, COUNT, new Hour());
+		aa2 = new DynamicTimeSeriesCollection(2, COUNT, new Hour());
+		aa3 = new DynamicTimeSeriesCollection(2, COUNT, new Hour());
+		aa4 = new DynamicTimeSeriesCollection(2, COUNT, new Hour());
+		aa5 = new DynamicTimeSeriesCollection(2, COUNT, new Hour());
+		
 		dataset.setTimeBase(new Hour());
 		dataset.addSeries(plotData(), 0, "1");
 		dataset.addSeries(plotData(), 1, "2");
+		
+		aa1.setTimeBase(new Hour());
+		aa1.addSeries(plotData(), 0, "1");
+		aa1.addSeries(plotData(), 1, "2");
+		
+		aa2.setTimeBase(new Hour());
+		aa2.addSeries(plotData(), 0, "1");
+		aa2.addSeries(plotData(), 1, "2");
+		
+		aa3.setTimeBase(new Hour());
+		aa3.addSeries(plotData(), 0, "1");
+		aa3.addSeries(plotData(), 1, "2");
+		
+		aa4.setTimeBase(new Hour());
+		aa4.addSeries(plotData(), 0, "1");
+		aa4.addSeries(plotData(), 1, "2");
+		
+		aa5.setTimeBase(new Hour());
+		aa5.addSeries(plotData(), 0, "1");
+		aa5.addSeries(plotData(), 1, "2");
 
 		JFreeChart chart = createChart(dataset);
 		ChartPanel chartPanel = new ChartPanel(chart);

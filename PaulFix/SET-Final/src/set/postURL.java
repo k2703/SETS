@@ -52,7 +52,6 @@ public class postURL {
 		try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
 
 			CSVReader reader = new CSVReader(new FileReader(filename));
-			int columnPosition;
 			List<String[]> lines = new ArrayList<>();
 			lines = reader.readAll(); 
 			int i;
@@ -88,7 +87,7 @@ public class postURL {
 				//System.out.println(str);
 			}
 			incrHour();
-			
+			reader.close();
 
 		} catch (MalformedURLException e) {
 
