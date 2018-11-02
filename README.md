@@ -13,7 +13,9 @@ The prediction forecasting is provided via a fitted LSTM model provided via a we
 
 ![](forecast-api.png?raw=true)
 
-Note that the server ip address would need to be replaced accordingly. A more detailed overview of the project is given here https://github.com/k2703/SETS/blob/master/lstm-forecast-api/FORECASTREADME.md
+The forecast service itself is provided as a standalone microservice and hence decoupled from the jade environment.
+The project is locate here: https://github.com/k2703/SETS/tree/master/lstm-forecast-api
+A more detailed overview of the project is given here: https://github.com/k2703/SETS/blob/master/lstm-forecast-api/FORECASTREADME.md
 
 # Use of CodeBase
 
