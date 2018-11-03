@@ -48,14 +48,13 @@ curl -H "Content-Type: application/json" -X POST -d '{"observation":"59.51666667
 ```
 ![](warning.png?raw=True)
 
-To be more precise, just execute the following 2 commands to reinstantiate the state of the model:
+To be more precise, the model state can be reinstantiated by calling the following 2 commands:
 
 ```bash
 
 # For reinstantiation of model state please execute those 2 commands in a row
 
 curl -H "Content-Type: application/json" -X POST -d '{"appliances":["FGE","HTE","TVE","SPA","WOE"]}' http://115.146.92.150:5000/lstmforecast/deploy-model
- 
 curl -H "Content-Type: application/json" -X POST -d '' http://115.146.92.150:5000/lstmforecast/pullback-model
 
 ```
