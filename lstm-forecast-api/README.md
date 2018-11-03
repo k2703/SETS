@@ -38,7 +38,7 @@ Once the web server is up and running one can access the API using the following
 ```bash
 
 # Deploys pretrained LSTM models for a passed list of appliances  
-curl -H "Content-Type: application/json" -X POST -d '{"appliances":["FGE","HTE","TVE"]}' http://115.146.92.150:5000/lstmforecast/deploy-model
+curl -H "Content-Type: application/json" -X POST -d '{"appliances":["FGE","HTE","TVE","SPA","WOE"]}' http://115.146.92.150:5000/lstmforecast/deploy-model
 
 # Pulls back all currently deployed LSTM models 
 curl -H "Content-Type: application/json" -X POST -d '' http://115.146.92.150:5000/lstmforecast/pullback-model
