@@ -59,7 +59,7 @@ public class postURL {
 			String actual = lines.get(getHour()+1)[getHeaderLocation(lines.get(0), column)];
 			tou = lines.get(getHour()+1)[getHeaderLocation(lines.get(0), "UNIX_TS")];
 			//System.out.println(actual);
-			result[0] = Double.parseDouble(actual)*60;
+			result[0] = Double.parseDouble(actual);
 			//System.out.println(result[0]);
 			String url = "http://115.146.92.150:5000/lstmforecast/" + column + "/predict";
 			HttpPost postRequest = new HttpPost(url);
@@ -83,7 +83,7 @@ public class postURL {
 			while ((output = br.readLine()) != null) {
 			    
 				String str = output.replaceAll("[^\\d.]", "");
-				result[1] = Double.parseDouble( str)*60;
+				result[1] = Double.parseDouble( str);
 				//System.out.println(str);
 			}
 			incrHour();
