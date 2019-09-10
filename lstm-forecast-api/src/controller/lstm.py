@@ -14,6 +14,16 @@ class LSTMSeries:
 
     MODEL_PATH = "/src/model/models/"
     DATA_PATH = "/src/model/data/"
+    
+    
+    def __init__(self, train_values_name, model_name, scaler_name):
+        """
+            Constructor inits series of true observations, the lstm model and 
+            the corresponding scaler object
+        """
+        self.series = self.load_ndarray(train_values_name)
+        self.lstm_model = self.load_model(model_name)
+        self.scaler = self.load_scaler(scaler_name)
 
     def load_model(self, model_name):
         """
@@ -48,15 +58,6 @@ class LSTMSeries:
         ndarray = np.load(ndarray_filename) 
         return ndarray
 
-    def __init__(self, train_values_name, model_name, scaler_name):
-        """
-            Constructor inits series of true observations, the lstm model and 
-            the corresponding scaler object
-        """
-        self.series = self.load_ndarray(train_values_name)
-        self.lstm_model = self.load_model(model_name)
-        self.scaler = self.load_scaler(scaler_name)
-
     def init_state(self, train_norm_name):
         """
             Predicts the entire training set in order to update hidden state 
@@ -79,10 +80,11 @@ class LSTMSeries:
         """
         series_head = self.series[-3:]
         diff_input = preprocess.difference(series_head, 1)
-        # transform data to be supervised learning
+        # build supervised training set
         supervised_input = preprocess.timeseries_to_supervised(diff_input, 1)
         supervised_input_values = supervised_input.values
         input_normalized = np.concatenate((self.scaler.transform(supervised_input_values)[:,0], self.scaler.transform(supervised_input_values)[-1,1]),axis=None)
         input_normalized_reshaped = np.asarray([input_normalized[-1]]).reshape(1, 1, 1)
         normalized_predictions = self.lstm_model.predict(input_normalized_reshaped, batch_size=1)
+        
         return preprocess.invert_normalize(self.scaler, series_head[-1], normalized_predictions)
