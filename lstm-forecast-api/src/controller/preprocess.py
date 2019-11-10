@@ -1,4 +1,4 @@
-import pandas as pd 
+import pandas as pd
 from sklearn.metrics import mean_squared_error
 from math import sqrt
 from sklearn.preprocessing import MinMaxScaler
@@ -7,24 +7,28 @@ import os
 from datetime import datetime
 
 
-def read_electricity_p(appliances = None, 
-                       limit = None, 
-                       filename = 'Electricity_P.csv'):
+def read_electricity_p(appliances=None,
+                       limit=None,
+                       filename='Electricity_P.csv'):
     """
         Reads Electricity_p dataset
     """
-    filename = os.path.dirname(os.path.dirname(os.getcwd()).replace(' ','\ ')) + "/data/" + filename
+    filename = os.path.dirname(os.path.dirname(
+        os.getcwd()).replace(' ', '\ ')) + "/data/" + filename
     if appliances is None and limit is None:
-        electricity_data = pd.read_csv(filename,sep=",")
+        electricity_data = pd.read_csv(filename, sep=",")
     elif appliances is None and limit is not None:
-        electricity_data = pd.read_csv(filename,sep=",", nrows = limit)
+        electricity_data = pd.read_csv(filename, sep=",", nrows=limit)
     elif appliances is not None and limit is None:
-        electricity_data = pd.read_csv(filename,sep=",", usecols=(appliances+['UNIX_TS']))
+        electricity_data = pd.read_csv(
+            filename, sep=",", usecols=(appliances+['UNIX_TS']))
     else:
-        electricity_data = pd.read_csv(filename,sep=",",nrows = limit, usecols=(appliances+['UNIX_TS']))
+        electricity_data = pd.read_csv(
+            filename, sep=",", nrows=limit, usecols=(appliances+['UNIX_TS']))
 
     # convert date column into plotly-interpretable format
-    electricity_data['UNIX_TS'] = pd.to_datetime(electricity_data['UNIX_TS'],unit='s').astype(datetime)
+    electricity_data['UNIX_TS'] = pd.to_datetime(
+        electricity_data['UNIX_TS'], unit='s').astype(datetime)
 
     # aggregate on an hour basis
     electricity_data = electricity_data \
@@ -37,7 +41,7 @@ def read_electricity_p(appliances = None,
 
 def timeseries_to_supervised(data, lag=1):
     """
-        Create supervised data by concatenating input values at time t 
+        Create supervised data by concatenating input values at time t
         with their corresponding output values at time t+1
     """
     df = pd.DataFrame(data)
@@ -64,7 +68,7 @@ def inverse_difference(history, yhat, interval=1):
         Inverses differencing
     """
     return yhat + history[-interval]
- 
+
 
 def scale(train, test):
     """
@@ -77,7 +81,7 @@ def scale(train, test):
     # transform train
     train = train.reshape(train.shape[0], train.shape[1])
     series_scaled = scaler.transform(train)
-    
+
     # transform test
     test = test.reshape(test.shape[0], test.shape[1])
     test_scaled = scaler.transform(test)
@@ -94,18 +98,21 @@ def invert_scale(scaler, predictions):
     inverted = scaler.inverse_transform(array)
     return inverted
 
- 
+
 def invert_normalize(scaler, series_raw, series_predictions_normalized):
     """
         Inverses normalizing by inversing scaling and differencing
     """
-    series_predictions_scaled = invert_scale(scaler, series_predictions_normalized)
+    series_predictions_scaled = invert_scale(
+        scaler, series_predictions_normalized)
     tmp = list()
     for i in range(len(series_predictions_scaled)):
-        value = inverse_difference(series_raw, series_predictions_scaled[i], len(series_raw)-i)
+        value = inverse_difference(
+            series_raw, series_predictions_scaled[i], len(series_raw)-i)
         tmp.append(value)
     series_predictions = pd.Series(tmp)
-    series_predictions = [x[0]  for x in series_predictions] # index input column
+    series_predictions = [x[0]
+                          for x in series_predictions]  # index input column
     return series_predictions
 
 
@@ -114,10 +121,7 @@ def compute_rmse(raw, prediction):
         Computes root mean squared error for two vector
     """
     if len(raw) != len(prediction):
-        raise ValueError("raw series and predicition series do not have same input length!")
+        raise ValueError(
+            "raw series and predicition series do not have same input length!")
     rmse = sqrt(mean_squared_error(raw, prediction))
     return rmse
-
-
-    
-

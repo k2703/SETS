@@ -1,6 +1,6 @@
 import logging
 import view.app as app_rest
-import argparse
+from controller.options import parse_args
 
 
 # Configure logger
@@ -12,13 +12,10 @@ logging.basicConfig(
 
 # main method
 def main():
-    app_rest.start()
-    
+    opts = parse_args()
+    app_rest.start(opts)
+
 
 # start main method
 if __name__ == '__main__':
     main()
-
-
-
-

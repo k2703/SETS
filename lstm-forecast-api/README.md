@@ -1,22 +1,36 @@
 # Projectinformations for user
 
-## Using code base
+## Setup virtual environment
 
-To start the web service on your current hosted server the following commands need to be executed:
+Set up virtaulenvironment
 
 ```bash
 
-# Change into source directory
-cd src/
+# Change into lstm-forecast
+cd lstm-forecast-api/src
+
+# create viraul env lstm-env
+python -m virtualenv lstm-env
+
+# activate virtual lstm-env
+source lstm-env/bin/activate
+
+# install dependencies
+pip install -r requirements.txt
+
+# change theme in jupyter (optional)
+pip install jupyterthemes
+jt -t chesterish
 
 # Execute main to start web server
 python3 main.py
 
 ```
 
-Note: The project on host `115.146.92.150` is located in `/home/ubuntu/Notebooks`
 
-To build models the following commands need to be executed:
+## Using code base
+
+To build models the one can use the template notebook 'src/model/model-builder-template'
 
 ```bash
 
@@ -31,6 +45,23 @@ model-builder-template.ipynb
 
 ```
 
+To start the web service on your current hosted server the following commands need to be executed:
+
+```bash
+
+# Change into source directory
+cd src/
+
+# Execute main to start web server
+python main.py --model_path="/src/model/models/" --data_path="/src/model/data/"
+
+
+```
+
+Note: The project on host `115.146.92.150` is located in `/home/ubuntu/Notebooks`
+
+
+
 ## Access to API
 
 Once the web server is up and running one can access the API using the following calls:
@@ -39,16 +70,18 @@ Once the web server is up and running one can access the API using the following
 
 # Deploys pretrained LSTM models for a passed list of appliances  
 curl -H "Content-Type: application/json" -X POST -d '{"appliances":["FGE","HTE","TVE","SPA","WOE"]}' http://115.146.92.150:5000/lstmforecast/deploy-model
+curl -H "Content-Type: application/json" -X POST -d '{"appliances":["FGE"]}' http://0.0.0.0:5000/lstmforecast/deploy-model
 
 # Pulls back all currently deployed LSTM models 
 curl -H "Content-Type: application/json" -X POST -d '' http://115.146.92.150:5000/lstmforecast/pullback-model
 
 # Conveys current observation to model and model returns corresponding prediction
 curl -H "Content-Type: application/json" -X POST -d '{"observation":"59.51666667"}' http://115.146.92.150:5000/lstmforecast/FGE/predict
+curl -H "Content-Type: application/json" -X POST -d '{"observation":"59.51666667"}' http://0.0.0.0:5000/lstmforecast/FGE/predict
 ```
 ![](warning.png?raw=True)
 
-To be more precise, the model state can be reinstantiated by calling the following 2 commands:
+The model state can be reinstantiated by calling the following 2 commands:
 
 ```bash
 
